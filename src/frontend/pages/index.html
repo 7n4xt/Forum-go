@@ -7,6 +7,14 @@
     <title>LinuxHub - Modern Linux Community</title>
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Add this script tag to ensure CSS is loaded before JS runs -->
+    <script>
+        window.addEventListener('load', function () {
+            console.log('Window fully loaded');
+            // You can call forceShowAuthPopup() here to test
+        });
+    </script>
 </head>
 
 <body>
@@ -22,9 +30,7 @@
                 <input type="text" placeholder="Search LinuxHub...">
             </div>
             <div class="user-nav">
-                <a href="#" class="nav-icon"><i class="fas fa-bell"></i><span class="badge">2</span></a>
                 <a href="#" class="nav-icon"><i class="fas fa-envelope"></i><span class="badge">1</span></a>
-                <a href="#" class="nav-icon"><i class="fas fa-terminal"></i></a>
                 <a href="#" class="user-profile">
                     <img src="../assets/images/user-avatar.jpg" alt="User">
                 </a>
@@ -206,103 +212,6 @@
 
             <!-- Right Sidebar -->
             <aside class="sidebar right-sidebar">
-                <!-- Stories Section -->
-                <section class="stories-section">
-                    <div class="section-header">
-                        <h2>Stories</h2>
-                        <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-                    <div class="stories-grid">
-                        <div class="story">
-                            <img src="../assets/images/story1.jpg" alt="Story 1">
-                            <span>Add story</span>
-                        </div>
-                        <div class="story">
-                            <img src="../assets/images/user1.jpg" alt="Linus">
-                            <span>Linus</span>
-                        </div>
-                        <div class="story">
-                            <img src="../assets/images/user2.jpg" alt="Sarah">
-                            <span>Sarah</span>
-                        </div>
-                        <div class="story">
-                            <img src="../assets/images/user3.jpg" alt="Mark">
-                            <span>Mark</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Chat Section -->
-                <section class="chat-section">
-                    <div class="section-header">
-                        <h2>Chat</h2>
-                        <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-
-                    <div class="online-status">
-                        <div class="status-indicator online"></div>
-                        <span>ONLINE</span>
-                    </div>
-
-                    <ul class="chat-contacts">
-                        <li class="chat-contact">
-                            <img src="../assets/images/user1.jpg" alt="Linus Torvalds">
-                            <div class="contact-name">Linus Torvalds</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                        <li class="chat-contact">
-                            <img src="../assets/images/user2.jpg" alt="Sarah Chen">
-                            <div class="contact-name">Sarah Chen</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                        <li class="chat-contact">
-                            <img src="../assets/images/user4.jpg" alt="David Miller">
-                            <div class="contact-name">David Miller</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                        <li class="chat-contact">
-                            <img src="../assets/images/user5.jpg" alt="Emma Watson">
-                            <div class="contact-name">Emma Watson</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                    </ul>
-
-                    <div class="online-status">
-                        <div class="status-indicator offline"></div>
-                        <span>OFFLINE</span>
-                    </div>
-
-                    <ul class="chat-contacts">
-                        <li class="chat-contact">
-                            <img src="../assets/images/user6.jpg" alt="Richard Stallman">
-                            <div class="contact-name">Richard Stallman</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                        <li class="chat-contact">
-                            <img src="../assets/images/user7.jpg" alt="Julia Evans">
-                            <div class="contact-name">Julia Evans</div>
-                            <div class="chat-actions">
-                                <a href="#"><i class="fas fa-video"></i></a>
-                                <a href="#"><i class="fas fa-phone-alt"></i></a>
-                            </div>
-                        </li>
-                    </ul>
-                </section>
 
                 <!-- Trending Topics -->
                 <section class="trending-section">
@@ -329,7 +238,13 @@
         </div>
     </div>
 
+    <!-- Move the script tag to the end of the body for better performance -->
     <script src="../js/main.js"></script>
+
+    <!-- Add a fallback button for testing -->
+    <button onclick="forceShowAuthPopup()" style="position: fixed; bottom: 10px; left: 10px; z-index: 9999;">
+        Show Auth Popup
+    </button>
 </body>
 
 </html>

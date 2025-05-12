@@ -1,6 +1,12 @@
 // Modern Linux Forum JavaScript
 
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM fully loaded");
+
+    // For testing - always show the popup regardless of localStorage
+    // Remove this line after confirming it works
+    showAuthPopup();
+
     // Initialize the application
     initApp();
 
@@ -12,11 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
 function initApp() {
     console.log("LinuxHub forum initialized");
 
-    // Show a welcome message for first time visitors
-    if (!localStorage.getItem('visited')) {
-        showWelcomeMessage();
-        localStorage.setItem('visited', 'true');
-    }
+    // Show authentication popup for first time visitors
+    // Comment out the localStorage check for now to ensure popup always shows
+    // if (!localStorage.getItem('visited')) {
+    showAuthPopup();
+    //     localStorage.setItem('visited', 'true');
+    // }
 }
 
 // Add event listeners to interactive elements
@@ -233,46 +240,158 @@ function showPostMenu(button) {
     });
 }
 
-// Show welcome message
-function showWelcomeMessage() {
-    const welcomeMessage = document.createElement('div');
-    welcomeMessage.className = 'welcome-message';
-    welcomeMessage.innerHTML = `
-        <div class="welcome-content">
-            <h2>Welcome to LinuxHub!</h2>
-            <p>The community for Linux enthusiasts and problem-solvers.</p>
-            <button class="btn primary">Get Started</button>
+// Show authentication popup (replaces welcome message)
+function showAuthPopup() {
+    console.log("Attempting to show auth popup");
+
+    // First check if popup already exists to prevent duplicates
+    if (document.querySelector('.auth-popup')) {
+        console.log("Auth popup already exists, not creating another one");
+        return;
+    }
+
+    const authPopup = document.createElement('div');
+    authPopup.className = 'auth-popup';
+    authPopup.innerHTML = `
+        <div class="auth-content card">
+            <div class="auth-header">
+                <i class="fab fa-linux"></i>
+                <h2>Welcome to LinuxHub!</h2>
+                <p>The community for Linux enthusiasts and problem-solvers.</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">Login</button>
+                <button class="tab-btn" data-tab="signup">Sign Up</button>
+            </div>
+            
+            <div class="auth-form-container">
+                <!-- Login Form -->
+                <form class="auth-form login-form active">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password">
+                    </div>
+                    
+                    <div class="form-footer">
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn primary btn-block">Login</button>
+                </form>
+                
+                <!-- Signup Form -->
+                <form class="auth-form signup-form">
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" placeholder="Create a password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-confirm">Confirm Password</label>
+                        <input type="password" id="signup-confirm" placeholder="Confirm your password">
+                    </div>
+                    
+                    <button type="submit" class="btn primary btn-block">Create Account</button>
+                </form>
+            </div>
+            
+            <div class="guest-option">
+                <p>Not ready to sign up?</p>
+                <button class="btn btn-text btn-block">Continue as Guest</button>
+            </div>
         </div>
     `;
 
-    // Style the welcome message
-    welcomeMessage.style.position = 'fixed';
-    welcomeMessage.style.top = '0';
-    welcomeMessage.style.left = '0';
-    welcomeMessage.style.right = '0';
-    welcomeMessage.style.bottom = '0';
-    welcomeMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-    welcomeMessage.style.display = 'flex';
-    welcomeMessage.style.alignItems = 'center';
-    welcomeMessage.style.justifyContent = 'center';
-    welcomeMessage.style.zIndex = '1000';
-
-    welcomeMessage.querySelector('.welcome-content').style.backgroundColor = 'var(--card-bg)';
-    welcomeMessage.querySelector('.welcome-content').style.padding = '30px';
-    welcomeMessage.querySelector('.welcome-content').style.borderRadius = 'var(--border-radius)';
-    welcomeMessage.querySelector('.welcome-content').style.textAlign = 'center';
-    welcomeMessage.querySelector('.welcome-content').style.maxWidth = '500px';
-
-    welcomeMessage.querySelector('h2').style.marginBottom = '15px';
-    welcomeMessage.querySelector('p').style.marginBottom = '20px';
-    welcomeMessage.querySelector('p').style.color = 'var(--text-secondary)';
+    // Add inline styles temporarily to diagnose issues
+    authPopup.style.position = 'fixed';
+    authPopup.style.top = '0';
+    authPopup.style.left = '0';
+    authPopup.style.right = '0';
+    authPopup.style.bottom = '0';
+    authPopup.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    authPopup.style.display = 'flex';
+    authPopup.style.alignItems = 'center';
+    authPopup.style.justifyContent = 'center';
+    authPopup.style.zIndex = '9999';
 
     // Add to DOM
-    document.body.appendChild(welcomeMessage);
+    document.body.appendChild(authPopup);
+    console.log("Auth popup added to DOM");
 
-    // Close on button click
-    welcomeMessage.querySelector('button').addEventListener('click', function () {
-        document.body.removeChild(welcomeMessage);
+    // Tab switching functionality
+    const tabBtns = authPopup.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            // Update tab buttons
+            tabBtns.forEach(b => {
+                b.classList.remove('active');
+            });
+
+            this.classList.add('active');
+
+            // Show corresponding form
+            const tabName = this.getAttribute('data-tab');
+            const forms = authPopup.querySelectorAll('.auth-form');
+
+            forms.forEach(form => {
+                form.classList.remove('active');
+            });
+
+            const activeForm = authPopup.querySelector(`.${tabName}-form`);
+            activeForm.classList.add('active');
+        });
+    });
+
+    // Form submission handling (for prototype only)
+    const loginForm = authPopup.querySelector('.login-form');
+    loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+
+        if (email) {
+            document.body.removeChild(authPopup);
+            showNotification(`Logged in successfully as ${email}`);
+        } else {
+            showError('Please fill in all fields');
+        }
+    });
+
+    const signupForm = authPopup.querySelector('.signup-form');
+    signupForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('signup-confirm').value;
+
+        if (email && password && confirm) {
+            if (password !== confirm) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            document.body.removeChild(authPopup);
+            showNotification(`Account created successfully for ${email}`);
+        } else {
+            showError('Please fill in all fields');
+        }
+    });
+
+    // Guest option
+    const guestButton = authPopup.querySelector('.guest-option .btn');
+    guestButton.addEventListener('click', function () {
+        document.body.removeChild(authPopup);
+        showNotification('Welcome! You are browsing as a guest');
     });
 }
 
@@ -313,4 +432,9 @@ function showNotification(message, type = 'success') {
 // Show error message
 function showError(message) {
     showNotification(message, 'error');
+}
+
+// Add this helper function to force showing the popup
+function forceShowAuthPopup() {
+    showAuthPopup();
 }
