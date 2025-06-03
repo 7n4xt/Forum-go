@@ -1,13 +1,16 @@
 package main
 
 import (
-"fmt"
-"log"
-"net/http"
-"time"
+	"fmt"
+	"forum-go/config"
+	"log"
+	"net/http"
+	"time"
 )
 
 func main() {
+	config.LoadEnv() // Load environment variables
+ config.InitDB() // Initialize database connection
 // Configure static file server for CSS, JS, and images
 fs := http.FileServer(http.Dir("public"))
 http.Handle("/public/", http.StripPrefix("/public/", fs))
