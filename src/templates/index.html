@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinuxHub - Modern Linux Community</title>
+    <link rel="stylesheet" href="/public/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Add this script tag to ensure CSS is loaded before JS runs -->
+    <script>
+        window.addEventListener('load', function () {
+            console.log('Window fully loaded');
+            // You can call forceShowAuthPopup() here to test
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="logo">
+                <i class="fab fa-linux"></i>
+                <h1>LinuxHub</h1>
+            </div>
+            <div class="search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search LinuxHub...">
+            </div>
+            <div class="user-nav">
+                <a href="#" class="nav-icon"><i class="fas fa-envelope"></i><span class="badge">1</span></a>
+                <a href="#" class="user-profile">
+                    <img src="/public/images/user-avatar.jpg" alt="User">
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <aside class="sidebar left-sidebar">
+                <nav class="main-menu">
+                    <ul>
+                        <li class="active">
+                            <a href="#"><i class="fas fa-newspaper"></i> Feed</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-comment-alt"></i> Discussions <span
+                                    class="notification">3</span></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-image"></i> Screenshots</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-terminal"></i> Commands</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-code"></i> Scripts <span class="notification">2</span></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-calendar-alt"></i> Events</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-download"></i> Software</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="section-title">Shortcuts</div>
+                <nav class="shortcuts">
+                    <ul>
+                        <li>
+                            <a href="#"><i class="fab fa-ubuntu"></i> Ubuntu Community</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fab fa-fedora"></i> Fedora Users</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-keyboard"></i> Vim Enthusiasts</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-window-restore"></i> Window Managers</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-server"></i> SysAdmin Corner</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="section-title">Recent</div>
+                <nav class="recent-links">
+                    <ul>
+                        <li>
+                            <a href="#"><i class="fas fa-angle-right"></i> Kernel 6.2 Issues</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-angle-right"></i> Docker Containers</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fas fa-angle-right"></i> Git Workflow Tips</a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Central Content Feed -->
+            <main class="feed">
+                <!-- Create Post -->
+                <div class="post-creation card">
+                    <div class="input-area">
+                        <img src="/public/images/user-avatar.jpg" alt="User">
+                        <input type="text" placeholder="What's on your mind, Username?">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-text"><i class="fas fa-terminal"></i> Command</button>
+                        <button class="btn btn-text"><i class="fas fa-image"></i> Screenshot</button>
+                        <button class="btn primary">Post</button>
+                    </div>
+                </div>
+
+                <!-- Post 1 -->
+                <article class="post card">
+                    <div class="post-header">
+                        <img src="/public/images/user1.jpg" alt="Linus Torvalds" class="user-avatar">
+                        <div class="post-info">
+                            <h3>Linus Torvalds</h3>
+                            <span class="post-meta">Kernel Developer • 2h ago</span>
+                        </div>
+                        <button class="btn-menu"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                    <div class="post-content">
+                        <p>Just pushed the latest kernel patches. We're making good progress on the next release. Anyone
+                            interested in testing the latest features should check out the RC1.</p>
+                        <p>Main improvements are in file system performance and better hardware support for newer AMD
+                            chips.</p>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-action"><i class="far fa-thumbs-up"></i> Like</button>
+                        <button class="btn-action"><i class="far fa-comment"></i> Comment</button>
+                        <button class="btn-action"><i class="far fa-share-square"></i> Share</button>
+                    </div>
+                    <div class="post-stats">
+                        <span>142 likes</span>
+                        <span>37 comments</span>
+                    </div>
+                </article>
+
+                <!-- Post 2 -->
+                <article class="post card">
+                    <div class="post-header">
+                        <img src="/public/images/user2.jpg" alt="Sarah Chen" class="user-avatar">
+                        <div class="post-info">
+                            <h3>Sarah Chen</h3>
+                            <span class="post-meta">DevOps Engineer • 5h ago</span>
+                        </div>
+                        <button class="btn-menu"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                    <div class="post-content">
+                        <p>Finally got my custom i3wm setup working perfectly! Check out these screenshots:</p>
+                        <div class="image-grid">
+                            <img src="/public/images/screenshot1.jpg" alt="Desktop Screenshot 1">
+                            <img src="/public/images/screenshot2.jpg" alt="Desktop Screenshot 2">
+                            <img src="/public/images/screenshot3.jpg" alt="Desktop Screenshot 3">
+                            <div class="image-more">+3</div>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-action"><i class="far fa-thumbs-up"></i> Like</button>
+                        <button class="btn-action"><i class="far fa-comment"></i> Comment</button>
+                        <button class="btn-action"><i class="far fa-share-square"></i> Share</button>
+                    </div>
+                    <div class="post-stats">
+                        <span>78 likes</span>
+                        <span>23 comments</span>
+                    </div>
+                </article>
+
+                <!-- Post 3 -->
+                <article class="post card">
+                    <div class="post-header">
+                        <img src="/public/images/user3.jpg" alt="Mark Johnson" class="user-avatar">
+                        <div class="post-info">
+                            <h3>Mark Johnson</h3>
+                            <span class="post-meta">Linux Sysadmin • 8h ago</span>
+                        </div>
+                        <button class="btn-menu"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                    <div class="post-content">
+                        <p>Has anyone found a fix for the recent Bluetooth issues on Ubuntu 22.04? My headphones keep
+                            disconnecting after about 10 minutes of use. I've tried updating the firmware but no luck so
+                            far.</p>
+                        <div class="code-block">
+                            <pre><code>$ sudo systemctl status bluetooth
+● bluetooth.service - Bluetooth service
+     Loaded: loaded (/lib/systemd/system/bluetooth.service; enabled; vendor preset: enabled)
+     Active: active (running) since Thu 2023-05-04 09:14:32 UTC; 3h 26min ago</code></pre>
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-action"><i class="far fa-thumbs-up"></i> Like</button>
+                        <button class="btn-action"><i class="far fa-comment"></i> Comment</button>
+                        <button class="btn-action"><i class="far fa-share-square"></i> Share</button>
+                    </div>
+                    <div class="post-stats">
+                        <span>12 likes</span>
+                        <span>46 comments</span>
+                    </div>
+                </article>
+            </main>
+
+            <!-- Right Sidebar -->
+            <aside class="sidebar right-sidebar">
+
+                <!-- Trending Topics -->
+                <section class="trending-section">
+                    <div class="section-header">
+                        <h2>Trending Topics</h2>
+                        <button class="btn-more"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                    <ul class="trending-list">
+                        <li class="trending-item">
+                            <div class="trending-tag">#KernelUpdate</div>
+                            <div class="trending-count">1.2K posts</div>
+                        </li>
+                        <li class="trending-item">
+                            <div class="trending-tag">#Wayland</div>
+                            <div class="trending-count">856 posts</div>
+                        </li>
+                        <li class="trending-item">
+                            <div class="trending-tag">#RustInLinux</div>
+                            <div class="trending-count">643 posts</div>
+                        </li>
+                    </ul>
+                </section>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Add a fallback button for testing -->
+    <button onclick="forceShowAuthPopup()" style="position: fixed; bottom: 10px; left: 10px; z-index: 9999;">
+        Show Auth Popup
+    </button>
+</body>
+
+</html>
