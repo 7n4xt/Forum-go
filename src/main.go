@@ -3,33 +3,45 @@ package main
 import (
 	"fmt"
 	"forum-go/config"
+	"forum-go/routes"
+	"forum-go/templates"
 	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
-	config.LoadEnv() // Load environment variables
- config.InitDB() // Initialize database connection
-// Configure static file server for CSS, JS, and images
-fs := http.FileServer(http.Dir("public"))
-http.Handle("/public/", http.StripPrefix("/public/", fs))
+	config.LoadEnv()          // Load environment variables
+	config.InitDB()           // Initialize database connection
+	templates.LoadTemplates() // Load HTML templates
+	// Configure static file server for CSS, JS, and images
+	fs := http.FileServer(http.Dir("public"))
+	http.Handle("/public/", http.StripPrefix("/public/", fs))
 
-// Handle the main route
-http.HandleFunc("/", indexHandler)
+	// Create a new ServeMux
+	mux := http.NewServeMux()
 
-// Server configuration
-server := &http.Server{
-Addr:         ":8080",
-ReadTimeout:  10 * time.Second,
-WriteTimeout: 10 * time.Second,
-}
+	// Register routes
+	routes.AuthRouter(mux)
 
-fmt.Println("Starting server at http://localhost:8080")
-log.Fatal(server.ListenAndServe())
-}
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		c, cerr := r.Cookie("token")
+		fmt.Println("Cookie:", c, "Error:", cerr)
+		templates.Temp.ExecuteTemplate(w, "index", nil)
+	})
 
-// Handle the index route
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-http.ServeFile(w, r, "templates/index.html")
+	// You may have other routes to register
+	// routes.OtherRouter(mux)
+
+	// Set up the server
+	port := "8080" // You can change this or make it configurable
+	fmt.Printf("Server starting on port %s...\n", port)
+
+	// Use the mux when starting the server
+	err := http.ListenAndServe(":"+port, mux)
+	if err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
+
+	
+
 }

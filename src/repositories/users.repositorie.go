@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"forum-go/config"
 	"forum-go/models"
-	"fmt"
 )
 
 func CreateUser(user models.User) (int, error) {
@@ -139,11 +139,61 @@ func ReadUserById(userId int) (*models.User, error) {
 	return &user, nil
 }
 
-func ReadUserByUsername(username string) (*models.User, error) {
+func ReadUserByUsernameAndEmail(value string) (*models.User, error) {
 	// 1. Exécution de la requête préparée pour un seul résultat
 	sqlResult := config.DbContext.QueryRow(
-		"SELECT * FROM `users` WHERE username = ?;",
+		"SELECT * FROM `users` WHERE `username` = ? OR `email` = ?;",
+		value,
+		value,
+	)
+
+	// 2. Scan des colonnes dans un struct User
+	var user models.User
+	var lastLogin, bannedAt sql.NullTime
+
+	errScan := sqlResult.Scan(
+		&user.UserId,
+		&user.Username,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Role,
+		&user.CreatedAt,
+		&lastLogin,
+		&user.IsBanned,
+		&bannedAt,
+		&user.ProfilePicture,
+		&user.Biography,
+		&user.MessageCount,
+		&user.DiscussionCount,
+	)
+
+	if errScan != nil {
+		// Si aucune ligne, on renvoie (nil, nil) pour indiquer "non trouvé"
+		if errScan == sql.ErrNoRows {
+			return nil, nil
+		}
+		// Autre erreur, retour d'une erreur
+		return nil, fmt.Errorf("Erreur récupération utilisateur par nom d'utilisateur - Erreur : \n\t %s", errScan.Error())
+	}
+
+	// Conversion des champs NullTime en *time.Time
+	if lastLogin.Valid {
+		user.LastLogin = &lastLogin.Time
+	}
+	if bannedAt.Valid {
+		user.BannedAt = &bannedAt.Time
+	}
+
+	// 3. Retour utilisateur trouvé
+	return &user, nil
+}
+
+func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) {
+	// 1. Exécution de la requête préparée pour un seul résultat
+	sqlResult := config.DbContext.QueryRow(
+		"SELECT * FROM `users` WHERE `username` = ? OR `email` = ?;",
 		username,
+		email,
 	)
 
 	// 2. Scan des colonnes dans un struct User
@@ -317,4 +367,43 @@ func IncrementDiscussionCount(userId int) error {
 	}
 
 	return nil
+}
+
+func GetUserByEmailorUsername(value string) (*models.User, error) {
+	// 1. Exécution de la requête préparée pour un seul résultat
+	sqlResult := config.DbContext.QueryRow(
+		"SELECT  FROM `users` WHERE `email` = ? OR `username` = ?;",
+		value,
+		value,
+	)
+	// 2. Scan des colonnes dans un struct User
+	var user models.User
+	var lastLogin, bannedAt sql.NullTime
+
+	errScan := sqlResult.Scan(
+		&user.UserId,
+		&user.Username,
+		&user.Email,
+		&user.PasswordHash,
+	)
+
+	if errScan != nil {
+		// Si aucune ligne, on renvoie (nil, nil) pour indiquer "non trouvé"
+		if errScan == sql.ErrNoRows {
+			return nil, nil
+		}
+		// Autre erreur, retour d'une erreur
+		return nil, fmt.Errorf("Erreur récupération utilisateur par nom d'utilisateur - Erreur : \n\t %s", errScan.Error())
+	}
+
+	// Conversion des champs NullTime en *time.Time
+	if lastLogin.Valid {
+		user.LastLogin = &lastLogin.Time
+	}
+	if bannedAt.Valid {
+		user.BannedAt = &bannedAt.Time
+	}
+
+	// 3. Retour utilisateur trouvé
+	return &user, nil
 }
