@@ -26,6 +26,7 @@ type Message struct {
 	MessageId       int       // Primary key
 	Content         string    // Message text content
 	AuthorId        int       // Foreign key to User
+	Author          *User     // Author information (populated when needed)
 	DiscussionId    int       // Foreign key to Discussion
 	CreatedAt       time.Time // Message creation timestamp
 	UpdatedAt       time.Time // Last update timestamp
@@ -34,4 +35,30 @@ type Message struct {
 	LikeCount       int       // Number of likes
 	DislikeCount    int       // Number of dislikes
 	PopularityScore int       // like_count - dislike_count
+}
+
+// Discussion represents a discussion thread
+type Discussion struct {
+	DiscussionId int       // Primary key
+	Title        string    // Discussion title
+	Description  string    // Discussion description
+	Status       string    // "open", "closed", or "archived"
+	Visibility   string    // "public" or "private"
+	AuthorId     int       // Foreign key to User
+	Author       *User     // Author information (populated when needed)
+	CreatedAt    time.Time // Discussion creation timestamp
+	UpdatedAt    time.Time // Last update timestamp
+	ViewCount    int       // Number of views
+	MessageCount int       // Number of messages in the discussion
+	Categories   []string  // Categories/tags for the discussion
+	CategoryIds  []int     // Category IDs (for database operations)
+}
+
+// Category represents a discussion category/tag
+type Category struct {
+	CategoryId  int       // Primary key
+	Name        string    // Category name
+	Description string    // Category description
+	Color       string    // Hex color code
+	CreatedAt   time.Time // Category creation timestamp
 }

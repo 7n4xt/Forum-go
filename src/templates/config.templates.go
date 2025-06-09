@@ -8,9 +8,23 @@ import (
 var Temp *template.Template
 
 func LoadTemplates() {
-	listeTemplates, errTemplates := template.ParseGlob("./templates/*.html")
-	if errTemplates != nil {
-		log.Fatalf("Erreur chargement templates - Erreur : %s", errTemplates.Error())
+	templates := []string{
+		"./templates/*.html",
+		"./templates/*.template.html",
+		"./templates/*.templates.html",
 	}
-	Temp = listeTemplates
+
+	var err error
+	Temp = template.New("")
+
+	for _, pattern := range templates {
+		Temp, err = Temp.ParseGlob(pattern)
+		if err != nil {
+			log.Printf("Warning: Error loading templates from %s: %v", pattern, err)
+		}
+	}
+
+	if Temp == nil {
+		log.Fatalf("Error: No templates were loaded")
+	}
 }

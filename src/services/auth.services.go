@@ -53,15 +53,36 @@ func LoginService(password, username string) (string, error) {
 		return "", err
 	}
 
+	if user == nil {
+		return "", fmt.Errorf("user not found")
+	}
+
 	if !utils.ComparePasswords(user.PasswordHash, password) {
 		return "", fmt.Errorf("invalid password")
 	}
 
-	token, err := utils.GenerateJWT(user.UserId)
+	// Update last login time
+	err = repositories.UpdateLastLogin(user.UserId)
 	if err != nil {
-		return "", err
+		fmt.Printf("Warning: Failed to update last login time: %v\n", err)
 	}
-	fmt.Println("token ")
+
+	// Generate a random token
+	token := utils.GenerateRandomToken(32)
+
+	// Set expiration time (e.g., 24 hours from now)
+	expiresAt := time.Now().Add(24 * time.Hour)
+
+	// Create a session in the database
+	_, err = repositories.CreateSession(user.UserId, token, expiresAt)
+	if err != nil {
+		return "", fmt.Errorf("failed to create session: %v", err)
+	}
 
 	return token, nil
+}
+
+func LogoutService(token string) error {
+	// Delete the session from the database
+	return repositories.DeleteSession(token)
 }

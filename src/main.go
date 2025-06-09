@@ -22,15 +22,17 @@ func main() {
 
 	// Register routes
 	routes.AuthRouter(mux)
+	routes.DiscussionRouter(mux)
+	routes.MessageRouter(mux)
 
-	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		c, cerr := r.Cookie("token")
-		fmt.Println("Cookie:", c, "Error:", cerr)
-		templates.Temp.ExecuteTemplate(w, "index", nil)
+	// Index page (home)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "/discussions", http.StatusSeeOther)
 	})
-
-	// You may have other routes to register
-	// routes.OtherRouter(mux)
 
 	// Set up the server
 	port := "8080" // You can change this or make it configurable
@@ -41,7 +43,4 @@ func main() {
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
-
-	
-
 }

@@ -30,7 +30,7 @@ func FormSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/test", http.StatusSeeOther)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func PageLogin(w http.ResponseWriter, r *http.Request) {
@@ -62,5 +62,19 @@ func FormLogin(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	http.Redirect(w, r, "/test", http.StatusSeeOther)
+	http.Redirect(w, r, "/discussions", http.StatusSeeOther)
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// Delete the token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Path:     "/",
+		Value:    "",
+		HttpOnly: true,
+		MaxAge:   -1,
+	})
+
+	// Redirect to login page
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

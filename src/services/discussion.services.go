@@ -1,0 +1,57 @@
+package services
+
+import (
+	"errors"
+	"forum-go/models"
+	"forum-go/repositories"
+	"time"
+)
+
+// CreateDiscussionService creates a new discussion
+func CreateDiscussionService(title, description string, categoryIds []int, authorId int) (int64, error) {
+	// Validate inputs
+	if title == "" {
+		return 0, errors.New("title cannot be empty")
+	}
+	if description == "" {
+		return 0, errors.New("description cannot be empty")
+	}
+	if len(categoryIds) == 0 {
+		return 0, errors.New("at least one category must be selected")
+	}
+
+	// Create discussion object
+	discussion := models.Discussion{
+		Title:       title,
+		Description: description,
+		Status:      "open",
+		Visibility:  "public",
+		AuthorId:    authorId,
+		CategoryIds: categoryIds,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	// Call repository to save discussion
+	return repositories.CreateDiscussion(discussion)
+}
+
+// GetDiscussionByIDService retrieves a discussion by its ID
+func GetDiscussionByIDService(discussionId int) (models.Discussion, error) {
+	return repositories.GetDiscussionByID(discussionId)
+}
+
+// GetAllDiscussionsService retrieves all discussions with optional filtering
+func GetAllDiscussionsService(status string, categoryId int, authorId int, limit int, offset int) ([]models.Discussion, error) {
+	return repositories.GetAllDiscussions(status, categoryId, authorId, limit, offset)
+}
+
+// UpdateDiscussionStatusService updates the status of a discussion
+func UpdateDiscussionStatusService(discussionId int, status string, userId int) error {
+	return repositories.UpdateDiscussionStatus(discussionId, status, userId)
+}
+
+// GetAllCategoriesService retrieves all categories
+func GetAllCategoriesService() ([]models.Category, error) {
+	return repositories.GetAllCategories()
+}

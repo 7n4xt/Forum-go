@@ -372,19 +372,28 @@ func IncrementDiscussionCount(userId int) error {
 func GetUserByEmailorUsername(value string) (*models.User, error) {
 	// 1. Exécution de la requête préparée pour un seul résultat
 	sqlResult := config.DbContext.QueryRow(
-		"SELECT  FROM `users` WHERE `email` = ? OR `username` = ?;",
+		"SELECT * FROM `users` WHERE `email` = ? OR `username` = ?;",
 		value,
 		value,
 	)
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
-	var lastLogin, bannedAt sql.NullTime
+	var lastLogin, bannedAt, createdAt sql.NullTime
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
 		&user.Username,
 		&user.Email,
 		&user.PasswordHash,
+		&user.Role,
+		&createdAt,
+		&lastLogin,
+		&user.IsBanned,
+		&bannedAt,
+		&user.ProfilePicture,
+		&user.Biography,
+		&user.MessageCount,
+		&user.DiscussionCount,
 	)
 
 	if errScan != nil {
@@ -397,6 +406,9 @@ func GetUserByEmailorUsername(value string) (*models.User, error) {
 	}
 
 	// Conversion des champs NullTime en *time.Time
+	if createdAt.Valid {
+		user.CreatedAt = createdAt.Time
+	}
 	if lastLogin.Valid {
 		user.LastLogin = &lastLogin.Time
 	}

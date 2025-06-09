@@ -1,25 +1,67 @@
 {{define "signup"}}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>singup</title>
-    
+    <title>Sign Up - Forum</title>
+    <link rel="stylesheet" href="/public/css/main.css">
 </head>
+
 <body>
-    <form action="/signup/form" method="POST">
-        <label for="username">Nom d'utilisateur :</label>
-        <input type="text" id="username" name="username" required>
+    <header class="site-header">
+        <div class="container">
+            <div class="site-header-content">
+                <h1 class="site-title">Forum</h1>
+                <nav class="site-nav">
+                    <ul>
+                        <li><a href="/discussions">Discussions</a></li>
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup" class="active">Sign Up</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
 
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
+    <main class="container">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h2>Sign Up</h2>
+                <form action="/signup/form" method="POST">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
 
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="password" required>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
 
-        <button type="submit">S'inscrire</button>
-    </form>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Sign Up</button>
+                    </div>
+                </form>
+                <div class="auth-links">
+                    <p>Already have an account? <a href="/login">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2023 Forum. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
+
 </html>
 {{end}}

@@ -1,0 +1,115 @@
+{{define "discussions"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussions - Forum</title>
+    <link rel="stylesheet" href="/public/css/main.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="site-header-content">
+                <h1 class="site-title">Forum</h1>
+                <nav class="site-nav">
+                    <ul>
+                        <li><a href="/discussions" class="active">Discussions</a></li>
+                        {{if .User}}
+                        <li class="user-menu">
+                            <span>{{.User.Username}}</span>
+                            <div class="dropdown-menu">
+                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                                <a href="/logout">Logout</a>
+                            </div>
+                        </li>
+                        {{else}}
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                        {{end}}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Discussions</h2>
+            {{if .User}}
+            <a href="/discussions/new" class="btn btn-primary">New Discussion</a>
+            {{end}}
+        </div>
+
+        <div class="filters">
+            <form action="/discussions" method="GET">
+                <div class="filter-group">
+                    <label for="status">Status:</label>
+                    <select name="status" id="status">
+                        <option value="" {{if eq .Status "" }}selected{{end}}>All</option>
+                        <option value="open" {{if eq .Status "open" }}selected{{end}}>Open</option>
+                        <option value="closed" {{if eq .Status "closed" }}selected{{end}}>Closed</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="category">Category:</label>
+                    <select name="category" id="category">
+                        <option value="0" {{if eq .CategoryId 0}}selected{{end}}>All</option>
+                        {{range .Categories}}
+                        <option value="{{.CategoryId}}" {{if eq $.CategoryId .CategoryId}}selected{{end}}>{{.Name}}
+                        </option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Filter</button>
+            </form>
+        </div>
+
+        <div class="discussions-list">
+            {{if .Discussions}}
+            {{range .Discussions}}
+            <div class="discussion-card {{.Status}}">
+                <div class="discussion-header">
+                    <h3 class="discussion-title">
+                        <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
+                    </h3>
+                    <div class="discussion-status">{{.Status}}</div>
+                </div>
+                <div class="discussion-meta">
+                    <span class="discussion-author">By: {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}</span>
+                    <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
+                    <span class="discussion-messages">{{.MessageCount}} messages</span>
+                </div>
+                <div class="discussion-categories">
+                    {{range .Categories}}
+                    <span class="category-tag">{{.}}</span>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+            {{else}}
+            <div class="empty-state">
+                <p>No discussions found.</p>
+                {{if .User}}
+                <a href="/discussions/new" class="btn btn-primary">Create the first discussion</a>
+                {{else}}
+                <p>Please <a href="/login">login</a> to create a discussion.</p>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2023 Forum. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
+{{end}}
