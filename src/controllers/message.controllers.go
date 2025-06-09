@@ -109,32 +109,46 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Debug all form values
+	fmt.Println("DEBUG - All form values:")
+	for key, values := range r.Form {
+		fmt.Printf("DEBUG - Form field %s: %v\n", key, values)
+	}
+
 	// Get form values
 	content := r.FormValue("content")
-	discussionIdStr := r.FormValue("discussion_id")
+	fmt.Printf("DEBUG - Content from form: '%s'\n", content)
+
+	// Get discussion ID from URL path
+	path := r.URL.Path
+	fmt.Printf("DEBUG - URL path: '%s'\n", path)
+
+	// Extract discussion ID from URL path
+	parts := strings.Split(path, "/")
+	var discussionIdStr string
+	if len(parts) >= 3 && parts[len(parts)-2] == "create" {
+		discussionIdStr = parts[len(parts)-1]
+		fmt.Printf("DEBUG - Discussion ID from URL path: '%s'\n", discussionIdStr)
+	} else {
+		// Fallback to form value
+		discussionIdStr = r.FormValue("discussion_id")
+		fmt.Printf("DEBUG - Discussion ID from form: '%s'\n", discussionIdStr)
+	}
 
 	// Parse discussion ID
 	discussionId, err := strconv.Atoi(discussionIdStr)
 	if err != nil {
+		fmt.Printf("DEBUG - Error parsing discussion ID: %v\n", err)
 		http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
 		return
 	}
 
-	// Handle file upload if present
-	hasImage := false
-	imagePath := ""
-	file, handler, err := r.FormFile("image")
-	if err == nil && file != nil {
-		defer file.Close()
-		// Process image upload (code not shown for brevity)
-		// This would save the image to a directory and set hasImage and imagePath
-		hasImage = true
-		imagePath = "/public/images/" + handler.Filename
-	}
+	fmt.Printf("DEBUG - Parsed discussion ID: %d\n", discussionId)
 
 	// Create message
-	_, err = services.CreateMessageService(content, user.UserId, discussionId, hasImage, imagePath)
+	_, err = services.CreateMessageService(content, user.UserId, discussionId, false, "")
 	if err != nil {
+		fmt.Printf("DEBUG - Error creating message: %v\n", err)
 		http.Error(w, "Error creating message: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

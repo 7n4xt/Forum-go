@@ -12,10 +12,8 @@ import (
 func main() {
 	config.LoadEnv()          // Load environment variables
 	config.InitDB()           // Initialize database connection
-	templates.LoadTemplates() // Load HTML templates
-	// Configure static file server for CSS, JS, and images
-	fs := http.FileServer(http.Dir("public"))
-	http.Handle("/public/", http.StripPrefix("/public/", fs))
+	templates.LoadTemplates() // Load HTML templates and public files
+
 
 	// Create a new ServeMux
 	mux := http.NewServeMux()

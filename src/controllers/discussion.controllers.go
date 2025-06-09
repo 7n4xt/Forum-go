@@ -80,6 +80,8 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	discussionIdStr := parts[2]
+	fmt.Printf("DEBUG - Discussion ID from URL: '%s'\n", discussionIdStr)
+
 	discussionId, err := strconv.Atoi(discussionIdStr)
 	if err != nil {
 		http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
@@ -92,9 +94,12 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 	// Get discussion
 	discussion, err := services.GetDiscussionByIDService(discussionId)
 	if err != nil {
+		fmt.Printf("DEBUG - Error fetching discussion: %v\n", err)
 		http.Error(w, "Error fetching discussion: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Printf("DEBUG - Discussion object: %+v\n", discussion)
 
 	// Get messages for this discussion
 	messages, err := services.GetMessagesByDiscussionIdService(discussionId)
@@ -110,6 +115,8 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 		"User":       user,
 		"CanPost":    user != nil && discussion.Status == "open",
 	}
+
+	fmt.Printf("DEBUG - Discussion ID in template data: %d\n", discussion.DiscussionId)
 
 	// Render template
 	templates.Temp.ExecuteTemplate(w, "discussion", data)

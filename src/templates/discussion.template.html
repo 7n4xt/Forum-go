@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Discussion.Title}} - Forum</title>
     <link rel="stylesheet" href="/public/css/main.css">
+    
 </head>
 
 <body>
@@ -125,15 +126,12 @@
             {{if .CanPost}}
             <div class="new-message-form">
                 <h4>Post a Message</h4>
-                <form action="/messages/create" method="POST" enctype="multipart/form-data">
+                <div style="display:none">Discussion ID: {{.Discussion.DiscussionId}}</div>
+                <form action="/messages/create/{{.Discussion.DiscussionId}}" method="POST">
                     <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
                     <div class="form-group">
                         <label for="content">Message:</label>
                         <textarea id="content" name="content" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="image">Image (optional):</label>
-                        <input type="file" id="image" name="image" accept="image/*">
                     </div>
                     <button type="submit" class="btn btn-primary">Post Message</button>
                 </form>

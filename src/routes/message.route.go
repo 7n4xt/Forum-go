@@ -14,6 +14,7 @@ func MessageRouter(mux *http.ServeMux) {
 
 	// Protected routes (require authentication)
 	mux.HandleFunc("/messages/create", utils.RequireAuthentication(controllers.CreateMessage))
+	mux.HandleFunc("/messages/create/", utils.RequireAuthentication(controllers.CreateMessage))
 	mux.HandleFunc("/messages/update/", utils.RequireAuthentication(controllers.UpdateMessage))
 	mux.HandleFunc("/messages/delete/", utils.RequireAuthentication(controllers.DeleteMessage))
 }

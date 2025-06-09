@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"forum-go/models"
 	"forum-go/repositories"
 )
@@ -52,6 +53,8 @@ func GetMessagesByDiscussionIdService(discussionID int) ([]models.Message, error
 
 // CreateMessageService creates a new message
 func CreateMessageService(content string, authorID int, discussionID int, hasImage bool, imagePath string) (int, error) {
+	fmt.Printf("DEBUG - CreateMessageService called with discussionID: %d\n", discussionID)
+
 	if content == "" {
 		return 0, errors.New("content is required")
 	}
@@ -59,8 +62,11 @@ func CreateMessageService(content string, authorID int, discussionID int, hasIma
 	// Check if discussion exists and is open
 	discussion, err := repositories.GetDiscussionByID(discussionID)
 	if err != nil {
+		fmt.Printf("DEBUG - Error getting discussion: %v\n", err)
 		return 0, err
 	}
+
+	fmt.Printf("DEBUG - Discussion found: %+v\n", discussion)
 
 	if discussion.Status != "open" {
 		return 0, errors.New("cannot post in a closed or archived discussion")
