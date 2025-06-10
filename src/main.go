@@ -14,9 +14,11 @@ func main() {
 	config.InitDB()           // Initialize database connection
 	templates.LoadTemplates() // Load HTML templates and public files
 
-
 	// Create a new ServeMux
 	mux := http.NewServeMux()
+
+	// Serve static files
+	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 
 	// Register routes
 	routes.AuthRouter(mux)

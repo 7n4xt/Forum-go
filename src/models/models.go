@@ -37,6 +37,12 @@ type Message struct {
 	PopularityScore int       // like_count - dislike_count
 }
 
+// MessageWithReaction extends Message with user reaction information
+type MessageWithReaction struct {
+	Message      Message // The underlying message
+	UserReaction string  // The current user's reaction to the message ("like", "dislike", or "")
+}
+
 // Discussion represents a discussion thread
 type Discussion struct {
 	DiscussionId int       // Primary key

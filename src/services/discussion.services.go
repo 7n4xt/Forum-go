@@ -47,8 +47,42 @@ func GetAllDiscussionsService(status string, categoryId int, authorId int, limit
 }
 
 // UpdateDiscussionStatusService updates the status of a discussion
-func UpdateDiscussionStatusService(discussionId int, status string, userId int) error {
+func UpdateDiscussionStatusService(discussionId int, status string, userId int, isAdmin bool) error {
+	// Get discussion to check ownership
+	discussion, err := repositories.GetDiscussionByID(discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is discussion owner or admin
+	if discussion.AuthorId != userId && !isAdmin {
+		return errors.New("only the discussion owner or an admin can update the status")
+	}
+
 	return repositories.UpdateDiscussionStatus(discussionId, status, userId)
+}
+
+// DeleteDiscussionService deletes a discussion
+func DeleteDiscussionService(discussionId int, userId int, isAdmin bool) error {
+	// Get discussion to check ownership
+	discussion, err := repositories.GetDiscussionByID(discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is discussion owner or admin
+	if discussion.AuthorId != userId && !isAdmin {
+		return errors.New("only the discussion owner or an admin can delete the discussion")
+	}
+
+	// First delete all messages in the discussion
+	_, err = repositories.DeleteMessagesByDiscussionId(discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Then delete the discussion
+	return repositories.DeleteDiscussion(discussionId)
 }
 
 // GetAllCategoriesService retrieves all categories

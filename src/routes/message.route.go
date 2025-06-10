@@ -17,4 +17,7 @@ func MessageRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/messages/create/", utils.RequireAuthentication(controllers.CreateMessage))
 	mux.HandleFunc("/messages/update/", utils.RequireAuthentication(controllers.UpdateMessage))
 	mux.HandleFunc("/messages/delete/", utils.RequireAuthentication(controllers.DeleteMessage))
+
+	// Reaction routes - must be placed after other specific message routes
+	mux.HandleFunc("/messages/react/", utils.RequireAuthentication(controllers.ReactToMessage))
 }

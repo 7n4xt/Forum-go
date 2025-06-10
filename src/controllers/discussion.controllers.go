@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"forum-go/models"
 	"forum-go/services"
 	"forum-go/templates"
 	"forum-go/utils"
@@ -56,7 +57,7 @@ func GetAllDiscussions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare data for template
-	data := map[string]interface{}{
+	data := map[string]any{
 		"Discussions": discussions,
 		"Categories":  categories,
 		"User":        user,
@@ -108,10 +109,23 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Add user reactions if user is logged in
+	var messagesWithReactions []models.MessageWithReaction
+	var userId int = 0
+	if user != nil {
+		userId = user.UserId
+	}
+
+	messagesWithReactions, err = services.EnrichMessagesWithUserReactions(messages, userId)
+	if err != nil {
+		http.Error(w, "Error getting reactions: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Prepare data for template
 	data := map[string]interface{}{
 		"Discussion": discussion,
-		"Messages":   messages,
+		"Messages":   messagesWithReactions,
 		"User":       user,
 		"CanPost":    user != nil && discussion.Status == "open",
 	}
@@ -228,8 +242,11 @@ func UpdateDiscussionStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if user is admin
+	isAdmin := user.Role == "admin"
+
 	// Update discussion status
-	err = services.UpdateDiscussionStatusService(discussionId, status, user.UserId)
+	err = services.UpdateDiscussionStatusService(discussionId, status, user.UserId, isAdmin)
 	if err != nil {
 		http.Error(w, "Error updating discussion status: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -237,4 +254,58 @@ func UpdateDiscussionStatus(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect to discussion page
 	http.Redirect(w, r, "/discussions/"+discussionIdStr, http.StatusSeeOther)
+}
+
+// DeleteDiscussion handles the request to delete a discussion
+func DeleteDiscussion(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("DeleteDiscussion handler called")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check if user is authenticated
+	user, err := utils.GetUserFromRequest(r)
+	if err != nil || user == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Extract ID from URL path or form
+	var discussionId int
+	if r.URL.Path == "/discussions/delete" {
+		// Get from form
+		discussionIdStr := r.FormValue("discussion_id")
+		discussionId, err = strconv.Atoi(discussionIdStr)
+		if err != nil {
+			http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
+			return
+		}
+	} else {
+		// Get from URL
+		pathParts := strings.Split(r.URL.Path, "/")
+		if len(pathParts) < 3 {
+			http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
+			return
+		}
+		discussionId, err = strconv.Atoi(pathParts[2])
+		if err != nil {
+			http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Check if user is admin
+	isAdmin := user.Role == "admin"
+
+	// Delete discussion
+	err = services.DeleteDiscussionService(discussionId, user.UserId, isAdmin)
+	if err != nil {
+		http.Error(w, "Error deleting discussion: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to discussions page
+	http.Redirect(w, r, "/discussions", http.StatusSeeOther)
 }

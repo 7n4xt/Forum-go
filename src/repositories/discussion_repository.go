@@ -307,3 +307,39 @@ func GetAllCategories() ([]models.Category, error) {
 
 	return categories, nil
 }
+
+// DeleteDiscussion removes a discussion from the database
+func DeleteDiscussion(discussionId int) error {
+	db := config.DbContext
+
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// First delete all category associations
+	_, err = tx.Exec("DELETE FROM discussion_categories WHERE discussion_id = ?", discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Then delete the discussion itself
+	result, err := tx.Exec("DELETE FROM discussions WHERE discussion_id = ?", discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("discussion not found")
+	}
+
+	// Commit the transaction
+	return tx.Commit()
+}

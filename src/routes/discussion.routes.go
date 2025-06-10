@@ -16,4 +16,6 @@ func DiscussionRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/discussions/new", utils.RequireAuthentication(controllers.NewDiscussionPage))
 	mux.HandleFunc("/discussions/create", utils.RequireAuthentication(controllers.CreateDiscussionForm))
 	mux.HandleFunc("/discussions/status", utils.RequireAuthentication(controllers.UpdateDiscussionStatus))
+	mux.HandleFunc("/discussions/delete", utils.RequireAuthentication(controllers.DeleteDiscussion))
+	mux.HandleFunc("/discussions/delete/", utils.RequireAuthentication(controllers.DeleteDiscussion))
 }

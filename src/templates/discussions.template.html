@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discussions - Forum</title>
-    <link rel="stylesheet" href="#
+
 </head>
 
 <body>
@@ -89,6 +89,15 @@
                     <span class="category-tag">{{.}}</span>
                     {{end}}
                 </div>
+                {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
+                <div class="discussion-actions">
+                    <form action="/discussions/delete" method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this discussion?');">
+                        <input type="hidden" name="discussion_id" value="{{.DiscussionId}}">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+                {{end}}
             </div>
             {{end}}
             {{else}}
@@ -106,7 +115,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2023 Forum. All rights reserved.</p>
+            <p>&copy; 2025 Forum. All rights reserved.</p>
         </div>
     </footer>
 </body>
