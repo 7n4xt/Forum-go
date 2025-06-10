@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Discussion.Title}} - Forum</title>
     <link rel="stylesheet" href="/public/css/main.css">
-    
+
 </head>
 
 <body>
@@ -98,7 +98,7 @@
                     </div>
                     {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
                     <div class="message-actions">
-                        <button class="btn btn-sm" onclick="toggleEditForm({{.MessageId}})">Edit</button>
+                        <button class="btn btn-sm" onclick="toggleEditForm('{{.MessageId}}')">Edit</button>
                         <form action="/messages/delete/{{.MessageId}}" method="POST" class="inline-form">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
@@ -109,7 +109,7 @@
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-sm btn-primary">Save</button>
                                 <button type="button" class="btn btn-sm"
-                                    onclick="toggleEditForm({{.MessageId}})">Cancel</button>
+                                    onclick="toggleEditForm('{{.MessageId}}')">Cancel</button>
                             </div>
                         </form>
                     </div>

@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 	"forum-go/config"
 	"forum-go/models"
+	"fmt"
 )
 
 func CreateUser(user models.User) (int, error) {
@@ -49,7 +49,6 @@ func ReadAllUsers() (*[]models.User, error) {
 	for sqlResult.Next() {
 		var user models.User
 		var lastLogin, bannedAt sql.NullTime
-		var profilePicture, biography sql.NullString
 
 		// On scanne chaque colonne dans les champs du struct User
 		scanErr := sqlResult.Scan(
@@ -62,8 +61,8 @@ func ReadAllUsers() (*[]models.User, error) {
 			&lastLogin,
 			&user.IsBanned,
 			&bannedAt,
-			&profilePicture,
-			&biography,
+			&user.ProfilePicture,
+			&user.Biography,
 			&user.MessageCount,
 			&user.DiscussionCount,
 		)
@@ -78,19 +77,6 @@ func ReadAllUsers() (*[]models.User, error) {
 		}
 		if bannedAt.Valid {
 			user.BannedAt = &bannedAt.Time
-		}
-
-		// Conversion des champs NullString en string
-		if profilePicture.Valid {
-			user.ProfilePicture = profilePicture.String
-		} else {
-			user.ProfilePicture = ""
-		}
-
-		if biography.Valid {
-			user.Biography = biography.String
-		} else {
-			user.Biography = ""
 		}
 
 		// Ajout à la liste des utilisateurs
@@ -115,7 +101,6 @@ func ReadUserById(userId int) (*models.User, error) {
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
-	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -127,8 +112,8 @@ func ReadUserById(userId int) (*models.User, error) {
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&profilePicture,
-		&biography,
+		&user.ProfilePicture,
+		&user.Biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -150,35 +135,20 @@ func ReadUserById(userId int) (*models.User, error) {
 		user.BannedAt = &bannedAt.Time
 	}
 
-	// Conversion des champs NullString en string
-	if profilePicture.Valid {
-		user.ProfilePicture = profilePicture.String
-	} else {
-		user.ProfilePicture = ""
-	}
-
-	if biography.Valid {
-		user.Biography = biography.String
-	} else {
-		user.Biography = ""
-	}
-
 	// 3. Retour utilisateur trouvé
 	return &user, nil
 }
 
-func ReadUserByUsernameAndEmail(value string) (*models.User, error) {
+func ReadUserByUsername(username string) (*models.User, error) {
 	// 1. Exécution de la requête préparée pour un seul résultat
 	sqlResult := config.DbContext.QueryRow(
-		"SELECT * FROM `users` WHERE `username` = ? OR `email` = ?;",
-		value,
-		value,
+		"SELECT * FROM `users` WHERE username = ?;",
+		username,
 	)
 
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
-	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -190,8 +160,8 @@ func ReadUserByUsernameAndEmail(value string) (*models.User, error) {
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&profilePicture,
-		&biography,
+		&user.ProfilePicture,
+		&user.Biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -213,35 +183,20 @@ func ReadUserByUsernameAndEmail(value string) (*models.User, error) {
 		user.BannedAt = &bannedAt.Time
 	}
 
-	// Conversion des champs NullString en string
-	if profilePicture.Valid {
-		user.ProfilePicture = profilePicture.String
-	} else {
-		user.ProfilePicture = ""
-	}
-
-	if biography.Valid {
-		user.Biography = biography.String
-	} else {
-		user.Biography = ""
-	}
-
 	// 3. Retour utilisateur trouvé
 	return &user, nil
 }
 
-func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) {
+func ReadUserByEmail(email string) (*models.User, error) {
 	// 1. Exécution de la requête préparée pour un seul résultat
 	sqlResult := config.DbContext.QueryRow(
-		"SELECT * FROM `users` WHERE `username` = ? OR `email` = ?;",
-		username,
+		"SELECT * FROM `users` WHERE email = ?;",
 		email,
 	)
 
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
-	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -253,8 +208,8 @@ func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) 
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&profilePicture,
-		&biography,
+		&user.ProfilePicture,
+		&user.Biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -265,7 +220,7 @@ func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) 
 			return nil, nil
 		}
 		// Autre erreur, retour d'une erreur
-		return nil, fmt.Errorf("Erreur récupération utilisateur par nom d'utilisateur - Erreur : \n\t %s", errScan.Error())
+		return nil, fmt.Errorf("Erreur récupération utilisateur par email - Erreur : \n\t %s", errScan.Error())
 	}
 
 	// Conversion des champs NullTime en *time.Time
@@ -274,19 +229,6 @@ func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) 
 	}
 	if bannedAt.Valid {
 		user.BannedAt = &bannedAt.Time
-	}
-
-	// Conversion des champs NullString en string
-	if profilePicture.Valid {
-		user.ProfilePicture = profilePicture.String
-	} else {
-		user.ProfilePicture = ""
-	}
-
-	if biography.Valid {
-		user.Biography = biography.String
-	} else {
-		user.Biography = ""
 	}
 
 	// 3. Retour utilisateur trouvé
@@ -423,66 +365,4 @@ func IncrementDiscussionCount(userId int) error {
 	}
 
 	return nil
-}
-
-func GetUserByEmailorUsername(value string) (*models.User, error) {
-	// 1. Exécution de la requête préparée pour un seul résultat
-	sqlResult := config.DbContext.QueryRow(
-		"SELECT * FROM `users` WHERE `email` = ? OR `username` = ?;",
-		value,
-		value,
-	)
-	// 2. Scan des colonnes dans un struct User
-	var user models.User
-	var lastLogin, bannedAt sql.NullTime
-	var profilePicture, biography sql.NullString
-
-	errScan := sqlResult.Scan(
-		&user.UserId,
-		&user.Username,
-		&user.Email,
-		&user.PasswordHash,
-		&user.Role,
-		&user.CreatedAt,
-		&lastLogin,
-		&user.IsBanned,
-		&bannedAt,
-		&profilePicture,
-		&biography,
-		&user.MessageCount,
-		&user.DiscussionCount,
-	)
-
-	if errScan != nil {
-		// Si aucune ligne, on renvoie (nil, nil) pour indiquer "non trouvé"
-		if errScan == sql.ErrNoRows {
-			return nil, nil
-		}
-		// Autre erreur, retour d'une erreur
-		return nil, fmt.Errorf("Erreur récupération utilisateur par nom d'utilisateur - Erreur : \n\t %s", errScan.Error())
-	}
-
-	// Conversion des champs NullTime en *time.Time
-	if lastLogin.Valid {
-		user.LastLogin = &lastLogin.Time
-	}
-	if bannedAt.Valid {
-		user.BannedAt = &bannedAt.Time
-	}
-
-	// Conversion des champs NullString en string
-	if profilePicture.Valid {
-		user.ProfilePicture = profilePicture.String
-	} else {
-		user.ProfilePicture = ""
-	}
-
-	if biography.Valid {
-		user.Biography = biography.String
-	} else {
-		user.Biography = ""
-	}
-
-	// 3. Retour utilisateur trouvé
-	return &user, nil
 }
