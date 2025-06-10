@@ -23,7 +23,6 @@ func VerifyPassword(hashedPassword, password string) bool {
 }
 func ComparePasswords(hashedPassword, password string) bool {
 	return VerifyPassword(hashedPassword, password)
-
 }
 
 var secretKey = []byte("XXXXXXXXX")

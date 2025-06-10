@@ -3,26 +3,42 @@ package main
 import (
 	"fmt"
 	"forum-go/config"
-	"forum-go/controllers"
+	"forum-go/routes"
+	"forum-go/templates"
 	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
-	config.LoadEnv() // Load environment variables
-	config.InitDB()  // Initialize database connection
+	config.LoadEnv()          // Load environment variables
+	config.InitDB()           // Initialize database connection
+	templates.LoadTemplates() // Load HTML templates and public files
 
-	// Setup all routes
-	controllers.SetupRoutes()
 
-	// Server configuration
-	server := &http.Server{
-		Addr:         ":8080",
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+	// Create a new ServeMux
+	mux := http.NewServeMux()
+
+	// Register routes
+	routes.AuthRouter(mux)
+	routes.DiscussionRouter(mux)
+	routes.MessageRouter(mux)
+
+	// Index page (home)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	})
+
+	// Set up the server
+	port := "8080" // You can change this or make it configurable
+	fmt.Printf("Server starting on port %s...\n", port)
+
+	// Use the mux when starting the server
+	err := http.ListenAndServe(":"+port, mux)
+	if err != nil {
+		log.Fatalf("Server failed to start: %v", err)
 	}
-
-	fmt.Println("Starting server at http://localhost:8080")
-	log.Fatal(server.ListenAndServe())
 }

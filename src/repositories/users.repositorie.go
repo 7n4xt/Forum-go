@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"forum-go/config"
 	"forum-go/models"
-	"fmt"
+	"strings"
 )
 
 func CreateUser(user models.User) (int, error) {
@@ -365,4 +366,45 @@ func IncrementDiscussionCount(userId int) error {
 	}
 
 	return nil
+}
+
+// GetUserByEmailorUsername searches for a user by their username or email address
+// If the provided string contains '@', it will be treated as an email address
+// Otherwise, it will be treated as a username
+func GetUserByEmailorUsername(usernameOrEmail string) (*models.User, error) {
+	// Check if the input is an email (contains @)
+	if strings.Contains(usernameOrEmail, "@") {
+		// Treat as email
+		return ReadUserByEmail(usernameOrEmail)
+	}
+
+	// Treat as username
+	return ReadUserByUsername(usernameOrEmail)
+}
+
+// ExisteUserByUsernameAndEmail checks if a user exists with the given username or email
+// Returns:
+// - nil, nil if no user exists with the given username or email
+// - user, nil if a user exists with either the given username or email
+// - nil, error if there was an error checking for existence
+func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) {
+	// First check by username
+	user, err := ReadUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	// If found by username, return the user
+	if user != nil {
+		return user, nil
+	}
+
+	// If not found by username, check by email
+	user, err = ReadUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the result (either nil or user found by email)
+	return user, nil
 }
