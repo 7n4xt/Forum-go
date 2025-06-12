@@ -6,7 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discussions - Forum</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/css/icons.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 
 <body>
@@ -73,21 +77,28 @@
             {{if .Discussions}}
             {{range .Discussions}}
             <div class="discussion-card {{.Status}}">
-                <div class="discussion-header">
-                    <h3 class="discussion-title">
-                        <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
-                    </h3>
-                    <div class="discussion-status">{{.Status}}</div>
+                <div class="discussion-votes">
+                    <span class="view-count">{{.ViewCount}}</span>
+                    <span class="view-label">views</span>
                 </div>
-                <div class="discussion-meta">
-                    <span class="discussion-author">By: {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}</span>
-                    <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
-                    <span class="discussion-messages">{{.MessageCount}} messages</span>
-                </div>
-                <div class="discussion-categories">
-                    {{range .Categories}}
-                    <span class="category-tag">{{.}}</span>
-                    {{end}}
+                <div class="discussion-content">
+                    <div class="discussion-header">
+                        <h3 class="discussion-title">
+                            <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
+                        </h3>
+                        <div class="discussion-status {{.Status}}">{{.Status}}</div>
+                    </div>
+                    <div class="discussion-meta">
+                        <span class="discussion-author">Posted by {{if
+                            .Author}}u/{{.Author.Username}}{{else}}Unknown{{end}}</span>
+                        <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
+                        <span class="discussion-messages"><i class="icon-message"></i> {{.MessageCount}} comments</span>
+                    </div>
+                    <div class="discussion-categories">
+                        {{range .Categories}}
+                        <span class="category-tag">{{.}}</span>
+                        {{end}}
+                    </div>
                 </div>
                 {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
                 <div class="discussion-actions">
