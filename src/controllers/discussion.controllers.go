@@ -210,6 +210,61 @@ func NewDiscussionPage(w http.ResponseWriter, r *http.Request) {
 	templates.Temp.ExecuteTemplate(w, "new_discussion", data)
 }
 
+// UpdateDiscussionContent handles the request to update a discussion's content
+func UpdateDiscussionContent(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("UpdateDiscussionContent handler called")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check if user is authenticated
+	user, err := utils.GetUserFromRequest(r)
+	if err != nil || user == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Parse form
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get form values
+	discussionIdStr := r.FormValue("discussion_id")
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+
+	// Validate inputs
+	if title == "" || description == "" {
+		http.Error(w, "Title and description are required", http.StatusBadRequest)
+		return
+	}
+
+	// Convert discussion ID to integer
+	discussionId, err := strconv.Atoi(discussionIdStr)
+	if err != nil {
+		http.Error(w, "Invalid discussion ID", http.StatusBadRequest)
+		return
+	}
+
+	// Check if user is admin
+	isAdmin := user.Role == "admin"
+
+	// Update discussion content
+	err = services.UpdateDiscussionContentService(discussionId, title, description, user.UserId, isAdmin)
+	if err != nil {
+		http.Error(w, "Error updating discussion: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to discussion page
+	http.Redirect(w, r, "/discussions/"+discussionIdStr, http.StatusSeeOther)
+}
+
 // UpdateDiscussionStatus handles the request to update a discussion's status
 func UpdateDiscussionStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {

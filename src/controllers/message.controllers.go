@@ -231,13 +231,14 @@ func DeleteMessage(w http.ResponseWriter, r *http.Request) {
 
 	// Extract ID from URL path
 	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) < 3 {
-		http.Error(w, "Invalid message ID", http.StatusBadRequest)
+	fmt.Println("URL path parts:", pathParts)
+	if len(pathParts) < 4 {
+		http.Error(w, "Invalid message ID format in URL", http.StatusBadRequest)
 		return
 	}
-	messageID, err := strconv.Atoi(pathParts[2])
+	messageID, err := strconv.Atoi(pathParts[3])
 	if err != nil {
-		http.Error(w, "Invalid message ID", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Invalid message ID: %s - Error: %v", pathParts[3], err), http.StatusBadRequest)
 		return
 	}
 
@@ -245,6 +246,11 @@ func DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	message, err := services.GetMessageByIDService(messageID)
 	if err != nil {
 		http.Error(w, "Error fetching message: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if message == nil {
+		http.Error(w, "Message not found", http.StatusNotFound)
 		return
 	}
 

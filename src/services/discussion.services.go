@@ -62,6 +62,36 @@ func UpdateDiscussionStatusService(discussionId int, status string, userId int, 
 	return repositories.UpdateDiscussionStatus(discussionId, status, userId)
 }
 
+// UpdateDiscussionContentService updates the title and description of a discussion
+func UpdateDiscussionContentService(discussionId int, title, description string, userId int, isAdmin bool) error {
+	// Validate inputs
+	if title == "" {
+		return errors.New("title cannot be empty")
+	}
+	if description == "" {
+		return errors.New("description cannot be empty")
+	}
+
+	// Get discussion to check ownership
+	discussion, err := repositories.GetDiscussionByID(discussionId)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is discussion owner or admin
+	if discussion.AuthorId != userId && !isAdmin {
+		return errors.New("only the discussion owner or an admin can update the discussion")
+	}
+
+	// Check if discussion is still open
+	if discussion.Status != "open" {
+		return errors.New("cannot edit a closed or archived discussion")
+	}
+
+	// Update discussion
+	return repositories.UpdateDiscussionContent(discussionId, title, description)
+}
+
 // DeleteDiscussionService deletes a discussion
 func DeleteDiscussionService(discussionId int, userId int, isAdmin bool) error {
 	// Get discussion to check ownership

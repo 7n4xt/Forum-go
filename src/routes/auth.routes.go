@@ -11,4 +11,5 @@ func AuthRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/signup/form", controllers.FormSignup)
 	mux.HandleFunc("/login", controllers.PageLogin)
 	mux.HandleFunc("/login/form", controllers.FormLogin)
+	mux.HandleFunc("/logout", controllers.Logout)
 }

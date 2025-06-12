@@ -308,7 +308,32 @@ func GetAllCategories() ([]models.Category, error) {
 	return categories, nil
 }
 
-// DeleteDiscussion removes a discussion from the database
+// UpdateDiscussionContent updates the title and description of a discussion
+func UpdateDiscussionContent(discussionId int, title string, description string) error {
+	db := config.DbContext
+
+	// Update the discussion content
+	result, err := db.Exec(
+		"UPDATE discussions SET title = ?, description = ?, updated_at = ? WHERE discussion_id = ?",
+		title, description, time.Now(), discussionId,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("discussion not found")
+	}
+
+	return nil
+}
+
+// DeleteDiscussion removes a discussion from the database and all related data
 func DeleteDiscussion(discussionId int) error {
 	db := config.DbContext
 
@@ -319,16 +344,38 @@ func DeleteDiscussion(discussionId int) error {
 	}
 	defer tx.Rollback()
 
-	// First delete all category associations
-	_, err = tx.Exec("DELETE FROM discussion_categories WHERE discussion_id = ?", discussionId)
+	// First delete all message reactions in this discussion
+	_, err = tx.Exec(`DELETE mr FROM message_reactions mr 
+                     JOIN messages m ON mr.message_id = m.message_id 
+                     WHERE m.discussion_id = ?`, discussionId)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting message reactions: %w", err)
 	}
 
-	// Then delete the discussion itself
+	// Delete all images in this discussion
+	_, err = tx.Exec(`DELETE i FROM images i 
+                    JOIN messages m ON i.message_id = m.message_id 
+                    WHERE m.discussion_id = ?`, discussionId)
+	if err != nil {
+		return fmt.Errorf("error deleting message images: %w", err)
+	}
+
+	// Delete all messages in this discussion
+	_, err = tx.Exec("DELETE FROM messages WHERE discussion_id = ?", discussionId)
+	if err != nil {
+		return fmt.Errorf("error deleting messages: %w", err)
+	}
+
+	// Delete all category associations
+	_, err = tx.Exec("DELETE FROM discussion_categories WHERE discussion_id = ?", discussionId)
+	if err != nil {
+		return fmt.Errorf("error deleting discussion categories: %w", err)
+	}
+
+	// Finally delete the discussion itself
 	result, err := tx.Exec("DELETE FROM discussions WHERE discussion_id = ?", discussionId)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting discussion: %w", err)
 	}
 
 	// Check if any rows were affected

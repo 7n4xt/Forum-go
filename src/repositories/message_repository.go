@@ -219,14 +219,30 @@ func UpdateMessage(message models.Message) (bool, error) {
 	return true, nil
 }
 
-// DeleteMessage removes a message from the database
+// DeleteMessage removes a message from the database and all related data
 func DeleteMessage(messageId int) (bool, error) {
-	query := "DELETE FROM `messages` WHERE `message_id` = ?;"
-	result, err := config.DbContext.Exec(
-		query,
-		messageId,
-	)
+	// Begin transaction to ensure all related data is deleted atomically
+	db := config.DbContext
+	tx, err := db.Begin()
+	if err != nil {
+		return false, fmt.Errorf("Erreur démarrage transaction - Erreur : \n\t %s", err.Error())
+	}
+	defer tx.Rollback()
 
+	// First delete any message reactions for this message
+	_, err = tx.Exec("DELETE FROM message_reactions WHERE message_id = ?", messageId)
+	if err != nil {
+		return false, fmt.Errorf("Erreur suppression reactions message - Erreur : \n\t %s", err.Error())
+	}
+
+	// Delete any images associated with this message
+	_, err = tx.Exec("DELETE FROM images WHERE message_id = ?", messageId)
+	if err != nil {
+		return false, fmt.Errorf("Erreur suppression images message - Erreur : \n\t %s", err.Error())
+	}
+
+	// Finally delete the message itself
+	result, err := tx.Exec("DELETE FROM messages WHERE message_id = ?", messageId)
 	if err != nil {
 		return false, fmt.Errorf("Erreur suppression message - Erreur : \n\t %s", err.Error())
 	}
@@ -238,6 +254,11 @@ func DeleteMessage(messageId int) (bool, error) {
 
 	if rowsDeleted == 0 {
 		return false, nil
+	}
+
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		return false, fmt.Errorf("Erreur finalisation transaction - Erreur : \n\t %s", err.Error())
 	}
 
 	return true, nil

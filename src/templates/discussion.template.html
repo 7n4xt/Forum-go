@@ -60,6 +60,7 @@
 
         {{if and .User (or (eq .User.UserId .Discussion.AuthorId) (eq .User.Role "admin"))}}
         <div class="discussion-actions">
+            <!-- Status update form -->
             <form action="/discussions/status" method="POST" class="inline-form">
                 <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
                 {{if eq .Discussion.Status "open"}}
@@ -70,9 +71,37 @@
                 <button type="submit" name="status" value="archived" class="btn btn-danger">Archive Discussion</button>
                 {{end}}
             </form>
+
+            <!-- Edit button that shows/hides the edit form -->
+            {{if eq .Discussion.Status "open"}}
+            <button class="btn btn-primary" onclick="toggleDiscussionEditForm()">Edit Discussion</button>
+            {{end}}
+
+            <!-- Delete form -->
             <form action="/discussions/delete/{{.Discussion.DiscussionId}}" method="POST" class="inline-form"
                 onsubmit="return confirm('Are you sure you want to delete this discussion? This action cannot be undone.')">
                 <button type="submit" class="btn btn-danger">Delete Discussion</button>
+            </form>
+        </div>
+
+        <!-- Discussion edit form (hidden by default) -->
+        <div id="discussion-edit-form" style="display: none;">
+            <h3>Edit Discussion</h3>
+            <form action="/discussions/update" method="POST">
+                <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" value="{{.Discussion.Title}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="5"
+                        required>{{.Discussion.Description}}</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Discussion</button>
+                    <button type="button" class="btn" onclick="toggleDiscussionEditForm()">Cancel</button>
+                </div>
             </form>
         </div>
         {{end}}
@@ -108,13 +137,15 @@
                         <div class="reaction-buttons">
                             <form action="/messages/react/{{.Message.MessageId}}/like" method="POST"
                                 class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-like {{if eq .UserReaction "like"}}active{{end}}">
+                                <button type="submit" class="btn btn-sm btn-like {{if eq .UserReaction "
+                                    like"}}active{{end}}">
                                     👍 Like
                                 </button>
                             </form>
                             <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST"
                                 class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-dislike {{if eq .UserReaction "dislike"}}active{{end}}">
+                                <button type="submit" class="btn btn-sm btn-dislike {{if eq .UserReaction "
+                                    dislike"}}active{{end}}">
                                     👎 Dislike
                                 </button>
                             </form>
@@ -125,7 +156,8 @@
                     {{if and $.User (or (eq $.User.UserId .Message.AuthorId) (eq $.User.Role "admin"))}}
                     <div class="message-actions">
                         <button class="btn btn-sm" onclick="toggleEditForm('{{.Message.MessageId}}')">Edit</button>
-                        <form action="/messages/delete/{{.Message.MessageId}}" method="POST" class="inline-form">
+                        <form action="/messages/delete/{{.Message.MessageId}}" method="POST" class="inline-form"
+                            onsubmit="return confirm('Are you sure you want to delete this message?')">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </div>
@@ -183,6 +215,15 @@
     <script>
         function toggleEditForm(messageId) {
             const form = document.getElementById(`edit-form-${messageId}`);
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function toggleDiscussionEditForm() {
+            const form = document.getElementById('discussion-edit-form');
             if (form.style.display === 'none') {
                 form.style.display = 'block';
             } else {

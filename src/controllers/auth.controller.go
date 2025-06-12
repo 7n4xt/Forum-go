@@ -3,7 +3,6 @@ package controllers
 import (
 	"crypto/sha512"
 	"encoding/hex"
-	"encoding/json"
 	"forum-go/models"
 	"forum-go/repositories"
 	"forum-go/services"
@@ -292,10 +291,4 @@ func hashPassword(password string) string {
 
 func verifyPassword(password, hash string) bool {
 	return hashPassword(password) == hash
-}
-
-// Helper function to render JSON responses (for future AJAX endpoints)
-func renderJSON(w http.ResponseWriter, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
 }
