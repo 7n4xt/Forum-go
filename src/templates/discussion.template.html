@@ -140,17 +140,13 @@
                             <span class="dislike-count">{{.Message.DislikeCount}} dislikes</span>
                         </div>
                         <div class="reaction-buttons">
-                            <form action="/messages/react/{{.Message.MessageId}}/like" method="POST"
-                                class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-like {{if eq .UserReaction "
-                                    like"}}active{{end}}">
+                            <form action="/messages/react/{{.Message.MessageId}}/like" method="POST" class="inline-form">
+                                <button type="submit" class="btn btn-sm btn-like {{if eq .UserReaction "like"}}active{{end}}">
                                     👍 Like
                                 </button>
                             </form>
-                            <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST"
-                                class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-dislike {{if eq .UserReaction "
-                                    dislike"}}active{{end}}">
+                            <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST" class="inline-form">
+                                <button type="submit" class="btn btn-sm btn-dislike {{if eq .UserReaction "dislike"}}active{{end}}">
                                     👎 Dislike
                                 </button>
                             </form>
