@@ -8,47 +8,204 @@
     <title>Admin Dashboard - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 
 <body>
+    <!-- Fixed Header -->
     <header class="site-header">
-        <div class="container">
-            <div class="site-header-content">
-                <h1 class="site-title"><a href="/discussions">Forum</a></h1>
-                <nav class="site-nav">
-                    <ul>
-                        <li><a href="/discussions">Discussions</a></li>
-                        <li><a href="/admin" class="admin-link active">Admin Panel</a></li>
-                        {{if .User}}
-                        <li class="user-menu">
-                            <span>{{.User.Username}}</span>
-                            <div class="dropdown-menu">
-                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
-                                <a href="/logout">Logout</a>
-                            </div>
-                        </li>
-                        {{end}}
-                    </ul>
-                </nav>
-            </div>
+        <div class="site-header-content">
+            <h1 class="site-title">
+                <a href="/discussions">💬 Forum</a>
+            </h1>
+            
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="/discussions">Discussions</a></li>
+                    <li><a href="/admin" class="admin-link active">Admin Panel</a></li>
+                    {{if .User}}
+                    <li class="user-menu">
+                        <span>{{.User.Username}}</span>
+                        <div class="dropdown-menu">
+                            <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                            <a href="/logout">Logout</a>
+                        </div>
+                    </li>
+                    {{end}}
+                </ul>
+            </nav>
         </div>
     </header>
 
-    <main class="container">
-        <div class="admin-layout">
-            <!-- Admin Sidebar -->
-            <aside class="admin-sidebar">
-                <h3>Admin Menu</h3>
-                <nav class="admin-nav">
-                    <ul>
-                        <li><a href="/admin" class="active">📊 Dashboard</a></li>
-                        <li><a href="/admin/discussions">💬 Manage Discussions</a></li>
-                        <li><a href="/admin/users">👥 Manage Users</a></li>
-                    </ul>
-                </nav>
+    <!-- Admin Layout -->
+    <div class="admin-layout">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <h3>⚙️ Admin Panel</h3>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="/admin" class="active">
+                        <span class="sidebar-nav-icon">📊</span>
+                        <span class="sidebar-nav-text">Dashboard</span>
+                    </a></li>
+                    <li><a href="/admin/discussions">
+                        <span class="sidebar-nav-icon">💬</span>
+                        <span class="sidebar-nav-text">Discussions</span>
+                    </a></li>
+                    <li><a href="/admin/users">
+                        <span class="sidebar-nav-icon">👥</span>
+                        <span class="sidebar-nav-text">Users</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Admin Content -->
+        <div class="admin-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">📊 Dashboard</h1>
+                <p class="page-subtitle">Overview of your forum activity and statistics</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.TotalUsers}}</div>
+                    <div class="stat-label">👥 Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.TotalDiscussions}}</div>
+                    <div class="stat-label">💬 Total Discussions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.TotalMessages}}</div>
+                    <div class="stat-label">📝 Total Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.TotalCategories}}</div>
+                    <div class="stat-label">📚 Categories</div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📈 Recent Activity</h3>
+                    <p class="card-subtitle">Latest discussions and user activity</p>
+                </div>
+                <div class="card-body">
+                    <!-- Recent Discussions -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold mb-4">🔥 Recent Discussions</h4>
+                        {{if .RecentDiscussions}}
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Status</th>
+                                        <th>Messages</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{range .RecentDiscussions}}
+                                    <tr>
+                                        <td>
+                                            <a href="/discussions/{{.DiscussionId}}" class="font-medium">
+                                                {{.Title}}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}
+                                        </td>
+                                        <td>
+                                            <span class="status {{.Status}}">{{.Status}}</span>
+                                        </td>
+                                        <td>{{.MessageCount}}</td>
+                                        <td>{{.CreatedAt.Format "Jan 02, 15:04"}}</td>
+                                        <td>
+                                            <a href="/admin/discussions" class="btn btn-sm btn-secondary">Manage</a>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                        {{else}}
+                        <p class="text-muted text-center">No recent discussions found.</p>
+                        {{end}}
+                    </div>
+
+                    <!-- Recent Users -->
+                    <div>
+                        <h4 class="font-semibold mb-4">👤 Recent Users</h4>
+                        {{if .RecentUsers}}
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{range .RecentUsers}}
+                                    <tr>
+                                        <td class="font-medium">{{.Username}}</td>
+                                        <td>{{.Email}}</td>
+                                        <td>
+                                            <span class="tag {{if eq .Role "admin"}}active{{end}}">{{.Role}}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status {{.Status}}">{{.Status}}</span>
+                                        </td>
+                                        <td>{{.CreatedAt.Format "Jan 02, 2006"}}</td>
+                                        <td>
+                                            <a href="/admin/users" class="btn btn-sm btn-secondary">Manage</a>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                        {{else}}
+                        <p class="text-muted text-center">No recent users found.</p>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Quick Actions</h3>
+                    <p class="card-subtitle">Common administrative tasks</p>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-wrap gap-4">
+                        <a href="/admin/discussions" class="btn btn-primary">
+                            💬 Manage Discussions
+                        </a>
+                        <a href="/admin/users" class="btn btn-secondary">
+                            👥 Manage Users
+                        </a>
+                        <a href="/discussions" class="btn btn-secondary">
+                            🔍 View Forum
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
             </aside>
 
             <!-- Main Content -->

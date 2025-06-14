@@ -8,273 +8,308 @@
     <title>{{.Discussion.Title}} - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 
 <body>
+    <!-- Fixed Header -->
     <header class="site-header">
-        <div class="container">
-            <div class="site-header-content">
-                <h1 class="site-title">Forum</h1>
-                <nav class="site-nav">
-                    <ul>
-                        <li><a href="/discussions">Discussions</a></li>
-                        {{if .User}}
-                        {{if eq .User.Role "admin"}}
-                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
-                        {{end}}
-                        <li class="user-menu">
-                            <span>{{.User.Username}}</span>
-                            <div class="dropdown-menu">
-                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
-                                <a href="/logout">Logout</a>
-                            </div>
-                        </li>
-                        {{else}}
-                        <li><a href="/login">Login</a></li>
-                        <li><a href="/signup">Sign Up</a></li>
-                        {{end}}
-                    </ul>
-                </nav>
-            </div>
+        <div class="site-header-content">
+            <h1 class="site-title">
+                <a href="/discussions">💬 Forum</a>
+            </h1>
+            
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="/discussions" class="active">Discussions</a></li>
+                    {{if .User}}
+                    {{if eq .User.Role "admin"}}
+                    <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                    {{end}}
+                    <li class="user-menu">
+                        <span>{{.User.Username}}</span>
+                        <div class="dropdown-menu">
+                            <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                            <a href="/logout">Logout</a>
+                        </div>
+                    </li>
+                    {{else}}
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/signup">Sign Up</a></li>
+                    {{end}}
+                </ul>
+            </nav>
         </div>
     </header>
 
-    <main class="container">
-        <div class="breadcrumbs">
-            <a href="/discussions">Discussions</a> &gt; {{.Discussion.Title}}
-        </div>
+    <!-- Main Content -->
+    <div style="margin-top: var(--header-height); padding: var(--space-6);">
+        <div style="max-width: var(--content-max-width); margin: 0 auto;">
+            <!-- Breadcrumbs -->
+            <nav style="margin-bottom: var(--space-6); font-size: 0.875rem; color: var(--gray-500);">
+                <a href="/discussions" style="color: var(--primary-color); text-decoration: none;">🏠 Discussions</a>
+                <span style="margin: 0 var(--space-2);">›</span>
+                <span>{{.Discussion.Title}}</span>
+            </nav>
 
-        <div class="discussion-header">
-            <h2>{{.Discussion.Title}}</h2>
-            <div class="discussion-meta">
-                <span class="discussion-author">By: {{if
-                    .Discussion.Author}}{{.Discussion.Author.Username}}{{else}}Unknown{{end}}</span>
-                <span class="discussion-date">{{.Discussion.CreatedAt.Format "Jan 02, 2006"}}</span>
-                <span class="discussion-status {{.Discussion.Status}}">{{.Discussion.Status}}</span>
-            </div>
-            <div class="discussion-categories">
-                {{range .Discussion.Categories}}
-                <span class="category-tag">{{.}}</span>
-                {{end}}
-            </div>
-        </div>
-
-        <div class="discussion-description">
-            <p>{{.Discussion.Description}}</p>
-        </div>
-
-        {{if and .User (or (eq .User.UserId .Discussion.AuthorId) (eq .User.Role "admin"))}}
-        <div class="discussion-actions">
-            <!-- Status update form -->
-            <form action="/discussions/status" method="POST" class="inline-form">
-                <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
-                {{if eq .Discussion.Status "open"}}
-                <button type="submit" name="status" value="closed" class="btn btn-warning">Close Discussion</button>
-                <button type="submit" name="status" value="archived" class="btn btn-danger">Archive Discussion</button>
-                {{else if eq .Discussion.Status "closed"}}
-                <button type="submit" name="status" value="open" class="btn btn-success">Reopen Discussion</button>
-                <button type="submit" name="status" value="archived" class="btn btn-danger">Archive Discussion</button>
-                {{end}}
-            </form>
-
-            <!-- Edit button that shows/hides the edit form -->
-            {{if eq .Discussion.Status "open"}}
-            <button class="btn btn-primary" onclick="toggleDiscussionEditForm()">Edit Discussion</button>
-            {{end}}
-
-            <!-- Delete form -->
-            <form action="/discussions/delete/{{.Discussion.DiscussionId}}" method="POST" class="inline-form"
-                onsubmit="return confirm('Are you sure you want to delete this discussion? This action cannot be undone.')">
-                <button type="submit" class="btn btn-danger">Delete Discussion</button>
-            </form>
-        </div>
-
-        <!-- Discussion edit form (hidden by default) -->
-        <div id="discussion-edit-form" style="display: none;">
-            <h3>Edit Discussion</h3>
-            <form action="/discussions/update" method="POST">
-                <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" id="title" name="title" value="{{.Discussion.Title}}" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="5"
-                        required>{{.Discussion.Description}}</textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Update Discussion</button>
-                    <button type="button" class="btn" onclick="toggleDiscussionEditForm()">Cancel</button>
-                </div>
-            </form>
-        </div>
-        {{end}}
-
-        <div class="messages-section">
-            <div class="messages-header">
-                <h3>Messages</h3>
-                
-                <!-- Message sorting and pagination controls -->
-                <div class="message-controls">
-                    <form action="/discussions/{{.Discussion.DiscussionId}}" method="GET" class="message-sort-form">
-                        <div class="control-group">
-                            <label for="sort">Sort by:</label>
-                            <select name="sort" id="sort" onchange="this.form.submit()">
-                                <option value="newest" {{if eq .SortBy "newest"}}selected{{end}}>Newest first</option>
-                                <option value="chronological" {{if eq .SortBy "chronological"}}selected{{end}}>Chronological</option>
-                                <option value="popularity" {{if eq .SortBy "popularity"}}selected{{end}}>Most popular</option>
-                            </select>
+            <!-- Discussion Header -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h1 class="page-title">{{.Discussion.Title}}</h1>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="text-sm text-muted">
+                                    👤 By {{if .Discussion.Author}}{{.Discussion.Author.Username}}{{else}}Unknown{{end}}
+                                </span>
+                                <span class="text-sm text-muted">
+                                    📅 {{.Discussion.CreatedAt.Format "Jan 02, 2006 at 15:04"}}
+                                </span>
+                                <span class="status {{.Discussion.Status}}">{{.Discussion.Status}}</span>
+                            </div>
                         </div>
                         
-                        <div class="control-group">
-                            <label for="limit">Per page:</label>
-                            <select name="limit" id="limit" onchange="this.form.submit()">
-                                <option value="10" {{if eq .Limit 10}}selected{{end}}>10</option>
-                                <option value="20" {{if eq .Limit 20}}selected{{end}}>20</option>
-                                <option value="30" {{if eq .Limit 30}}selected{{end}}>30</option>
-                                <option value="1000" {{if ge .Limit 1000}}selected{{end}}>All</option>
-                            </select>
+                        <div class="flex items-center gap-4 text-sm text-muted">
+                            <span>👁️ {{.Discussion.ViewCount}} views</span>
+                            <span>💬 {{.Discussion.MessageCount}} replies</span>
                         </div>
-                        
-                        <!-- Hidden field to preserve current page -->
-                        <input type="hidden" name="page" value="{{.Page}}">
-                    </form>
-                </div>
-            </div>
-
-            {{if .Messages}}
-            <div class="messages-list">
-                {{range .Messages}}
-                <div class="message-card" id="message-{{.Message.MessageId}}">
-                    <div class="message-header">
-                        <div class="message-author">
-                            {{if .Message.Author}}{{.Message.Author.Username}}{{else}}Unknown{{end}}
-                        </div>
-                        <div class="message-date">{{.Message.CreatedAt.Format "Jan 02, 2006 15:04"}}</div>
                     </div>
-                    <div class="message-content">
-                        <p>{{.Message.Content}}</p>
-                        {{if .Message.HasImage}}
-                        <div class="message-image">
-                            <img src="{{.Message.ImagePath}}" alt="Message attachment">
+                    
+                    {{if .Discussion.Categories}}
+                    <div class="tags mt-4">
+                        {{range .Discussion.Categories}}
+                        <a href="/discussions?category={{.}}" class="tag">{{.}}</a>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+                
+                <div class="card-body">
+                    <div class="discussion-description">
+                        <p style="line-height: 1.6; font-size: 1.1rem;">{{.Discussion.Description}}</p>
+                    </div>
+                </div>
+                
+                {{if and .User (or (eq .User.UserId .Discussion.AuthorId) (eq .User.Role "admin"))}}
+                <div class="card-footer">
+                    <div class="flex gap-2">
+                        <!-- Status update form -->
+                        <form action="/discussions/status" method="POST" style="display: inline;">
+                            <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
+                            {{if eq .Discussion.Status "active"}}
+                            <button type="submit" name="status" value="closed" class="btn btn-sm btn-warning">🔒 Close</button>
+                            {{else if eq .Discussion.Status "closed"}}
+                            <button type="submit" name="status" value="active" class="btn btn-sm btn-success">🔓 Reopen</button>
+                            {{end}}
+                        </form>
+                        
+                        {{if eq .User.Role "admin"}}
+                        <form action="/discussions/delete" method="POST" style="display: inline;" 
+                              onsubmit="return confirm('Are you sure you want to delete this discussion?');">
+                            <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                        </form>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Messages Section -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h3 class="card-title">💬 Messages ({{.TotalMessageCount}})</h3>
+                        
+                        <!-- Message Controls -->
+                        <div class="flex gap-4">
+                            <form action="/discussions/{{.Discussion.DiscussionId}}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
+                                <select name="sort" onchange="this.form.submit()" class="filter-select">
+                                    <option value="newest" {{if eq .SortBy "newest"}}selected{{end}}>Newest first</option>
+                                    <option value="chronological" {{if eq .SortBy "chronological"}}selected{{end}}>Chronological</option>
+                                </select>
+                                
+                                <select name="limit" onchange="this.form.submit()" class="filter-select">
+                                    <option value="10" {{if eq .Limit 10}}selected{{end}}>10 per page</option>
+                                    <option value="20" {{if eq .Limit 20}}selected{{end}}>20 per page</option>
+                                    <option value="30" {{if eq .Limit 30}}selected{{end}}>30 per page</option>
+                                </select>
+                                
+                                <input type="hidden" name="page" value="{{.Page}}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {{if .Messages}}
+                    <div class="space-y-4">
+                        {{range .Messages}}
+                        <div class="card" id="message-{{.Message.MessageId}}">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-semibold">
+                                            👤 {{if .Message.Author}}{{.Message.Author.Username}}{{else}}Unknown{{end}}
+                                        </span>
+                                        <span class="text-sm text-muted">
+                                            📅 {{.Message.CreatedAt.Format "Jan 02, 2006 at 15:04"}}
+                                        </span>
+                                    </div>
+                                    
+                                    {{if $.User}}
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm text-muted">👍 {{.Message.LikeCount}}</span>
+                                        <span class="text-sm text-muted">👎 {{.Message.DislikeCount}}</span>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="message-content" id="content-{{.Message.MessageId}}">
+                                    <p style="line-height: 1.6;">{{.Message.Content}}</p>
+                                    {{if .Message.HasImage}}
+                                    <div class="mt-4">
+                                        <img src="{{.Message.ImagePath}}" alt="Message attachment" 
+                                             style="max-width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                                    </div>
+                                    {{end}}
+                                </div>
+                                
+                                <!-- Edit Form (Hidden by default) -->
+                                <div class="message-edit-form" id="edit-form-{{.Message.MessageId}}" style="display: none;">
+                                    <form action="/messages/update/{{.Message.MessageId}}" method="POST">
+                                        <div class="form-group">
+                                            <textarea name="content" class="form-textarea" required>{{.Message.Content}}</textarea>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="submit" class="btn btn-sm btn-primary">💾 Save</button>
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                    onclick="toggleEditForm('{{.Message.MessageId}}')">❌ Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            {{if $.User}}
+                            <div class="card-footer">
+                                <div class="flex justify-between items-center">
+                                    <!-- Reaction Buttons -->
+                                    <div class="flex gap-2">
+                                        <form action="/messages/react/{{.Message.MessageId}}/like" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm {{if eq .UserReaction "like"}}btn-primary{{else}}btn-secondary{{end}}">
+                                                👍 Like {{if gt .Message.LikeCount 0}}({{.Message.LikeCount}}){{end}}
+                                            </button>
+                                        </form>
+                                        <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm {{if eq .UserReaction "dislike"}}btn-warning{{else}}btn-secondary{{end}}">
+                                                👎 Dislike {{if gt .Message.DislikeCount 0}}({{.Message.DislikeCount}}){{end}}
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Action Buttons for Author/Admin -->
+                                    {{if and $.User (or (eq $.User.UserId .Message.AuthorId) (eq $.User.Role "admin"))}}
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-sm btn-secondary" onclick="toggleEditForm('{{.Message.MessageId}}')">
+                                            ✏️ Edit
+                                        </button>
+                                        <form action="/messages/delete/{{.Message.MessageId}}" method="POST" style="display: inline;"
+                                              onsubmit="return confirm('Are you sure you want to delete this message?')">
+                                            <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                                        </form>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            {{end}}
                         </div>
                         {{end}}
                     </div>
-
-                    {{if $.User}}
-                    <div class="message-reactions">
-                        <div class="reaction-stats">
-                            <span class="like-count">{{.Message.LikeCount}} likes</span>
-                            <span class="dislike-count">{{.Message.DislikeCount}} dislikes</span>
-                        </div>
-                        <div class="reaction-buttons">
-                            <form action="/messages/react/{{.Message.MessageId}}/like" method="POST" class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-like {{if eq .UserReaction "like"}}active{{end}}">
-                                    👍 Like
-                                </button>
-                            </form>
-                            <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST" class="inline-form">
-                                <button type="submit" class="btn btn-sm btn-dislike {{if eq .UserReaction "dislike"}}active{{end}}">
-                                    👎 Dislike
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    {{end}}
-
-                    {{if and $.User (or (eq $.User.UserId .Message.AuthorId) (eq $.User.Role "admin"))}}
-                    <div class="message-actions">
-                        <button class="btn btn-sm" onclick="toggleEditForm('{{.Message.MessageId}}')">Edit</button>
-                        <form action="/messages/delete/{{.Message.MessageId}}" method="POST" class="inline-form"
-                            onsubmit="return confirm('Are you sure you want to delete this message?')">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </div>
-                    <div class="message-edit-form" id="edit-form-{{.Message.MessageId}}" style="display: none;">
-                        <form action="/messages/update/{{.Message.MessageId}}" method="POST">
-                            <textarea name="content" required>{{.Message.Content}}</textarea>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                                <button type="button" class="btn btn-sm"
-                                    onclick="toggleEditForm('{{.Message.MessageId}}')">Cancel</button>
-                            </div>
-                        </form>
+                    {{else}}
+                    <div class="text-center text-muted">
+                        <p>💬 No messages in this discussion yet.</p>
+                        {{if .User}}
+                        <p>Be the first to share your thoughts!</p>
+                        {{end}}
                     </div>
                     {{end}}
                 </div>
-                {{end}}
             </div>
-            {{else}}
-            <div class="empty-state">
-                <p>No messages in this discussion yet.</p>
-            </div>
-            {{end}}
 
-            <!-- Message Pagination Controls -->
+            <!-- Pagination -->
             {{if gt .TotalPages 1}}
             <div class="pagination">
-                <div class="pagination-info">
-                    Showing {{if .Messages}}{{len .Messages}}{{else}}0{{end}} of {{.TotalMessageCount}} messages
-                </div>
-                <div class="pagination-controls">
-                    {{if .HasPrev}}
-                    <a href="?page={{sub .Page 1}}&sort={{.SortBy}}&limit={{.Limit}}" class="btn btn-sm">« Previous</a>
-                    {{end}}
-                    
-                    <span class="page-info">Page {{.Page}} of {{.TotalPages}}</span>
-                    
-                    {{if .HasNext}}
-                    <a href="?page={{add .Page 1}}&sort={{.SortBy}}&limit={{.Limit}}" class="btn btn-sm">Next »</a>
-                    {{end}}
-                </div>
+                {{if .HasPrev}}
+                <a href="?page={{.PrevPage}}&sort={{.SortBy}}&limit={{.Limit}}" class="pagination-btn">← Previous</a>
+                {{end}}
+                
+                <span class="pagination-btn active">{{.Page}} of {{.TotalPages}}</span>
+                
+                {{if .HasNext}}
+                <a href="?page={{.NextPage}}&sort={{.SortBy}}&limit={{.Limit}}" class="pagination-btn">Next →</a>
+                {{end}}
             </div>
             {{end}}
 
+            <!-- New Message Form -->
             {{if .CanPost}}
-            <div class="new-message-form">
-                <h4>Post a Message</h4>
-                <div style="display:none">Discussion ID: {{.Discussion.DiscussionId}}</div>
-                <form action="/messages/create/{{.Discussion.DiscussionId}}" method="POST">
-                    <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
-                    <div class="form-group">
-                        <label for="content">Message:</label>
-                        <textarea id="content" name="content" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Post Message</button>
-                </form>
+            <div class="card mt-6">
+                <div class="card-header">
+                    <h4 class="card-title">✍️ Post a Message</h4>
+                </div>
+                <div class="card-body">
+                    <form action="/messages/create/{{.Discussion.DiscussionId}}" method="POST">
+                        <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
+                        <div class="form-group">
+                            <label for="content" class="form-label">Your Message</label>
+                            <textarea id="content" 
+                                      name="content" 
+                                      class="form-textarea" 
+                                      placeholder="Share your thoughts..."
+                                      rows="4"
+                                      required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            🚀 Post Message
+                        </button>
+                    </form>
+                </div>
             </div>
             {{else if eq .Discussion.Status "closed"}}
-            <div class="closed-message">
-                <p>This discussion is closed. New messages cannot be posted.</p>
+            <div class="card mt-6">
+                <div class="card-body text-center">
+                    <p class="text-muted">🔒 This discussion is closed. New messages cannot be posted.</p>
+                </div>
             </div>
             {{else if not .User}}
-            <div class="login-prompt">
-                <p>Please <a href="/login">login</a> to post messages.</p>
+            <div class="card mt-6">
+                <div class="card-body text-center">
+                    <p class="text-muted mb-4">💡 Join the conversation!</p>
+                    <a href="/login" class="btn btn-primary">Login to post a message</a>
+                </div>
             </div>
             {{end}}
         </div>
-    </main>
+    </div>
 
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 Forum. All rights reserved.</p>
-        </div>
-    </footer>
-
+    <!-- JavaScript for Edit Forms -->
     <script>
         function toggleEditForm(messageId) {
-            const form = document.getElementById(`edit-form-${messageId}`);
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
+            const content = document.getElementById('content-' + messageId);
+            const editForm = document.getElementById('edit-form-' + messageId);
+            
+            if (editForm.style.display === 'none') {
+                content.style.display = 'none';
+                editForm.style.display = 'block';
             } else {
-                form.style.display = 'none';
+                content.style.display = 'block';
+                editForm.style.display = 'none';
             }
         }
-
+        
         function toggleDiscussionEditForm() {
             const form = document.getElementById('discussion-edit-form');
             if (form.style.display === 'none') {

@@ -117,6 +117,13 @@ func AdminManageDiscussions(w http.ResponseWriter, r *http.Request) {
 	hasNext := page < totalPages
 	hasPrev := page > 1
 
+	// Calculate next and previous page numbers
+	nextPage := page + 1
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 1
+	}
+
 	// Prepare data for template
 	data := map[string]interface{}{
 		"User":        user,
@@ -128,6 +135,8 @@ func AdminManageDiscussions(w http.ResponseWriter, r *http.Request) {
 		"TotalPages":  totalPages,
 		"HasNext":     hasNext,
 		"HasPrev":     hasPrev,
+		"NextPage":    nextPage,
+		"PrevPage":    prevPage,
 	}
 
 	// Render template
@@ -184,6 +193,13 @@ func AdminManageUsers(w http.ResponseWriter, r *http.Request) {
 	hasNext := page < totalPages
 	hasPrev := page > 1
 
+	// Calculate next and previous page numbers
+	nextPage := page + 1
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 1
+	}
+
 	// Prepare data for template
 	data := map[string]interface{}{
 		"User":         user,
@@ -196,6 +212,8 @@ func AdminManageUsers(w http.ResponseWriter, r *http.Request) {
 		"TotalPages":   totalPages,
 		"HasNext":      hasNext,
 		"HasPrev":      hasPrev,
+		"NextPage":     nextPage,
+		"PrevPage":     prevPage,
 	}
 
 	// Render template

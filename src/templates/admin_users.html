@@ -5,237 +5,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - Admin Panel</ti                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Active Users:</span>
-                            <span class="stat-value">{{if .Stats}}{{.Stats.ActiveUsers}}{{else}}0{{end}}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Banned Users:</span>
-                            <span class="stat-value">{{if .Stats}}{{.Stats.BannedUsers}}{{else}}0{{end}}</span>
-                        </div>
-                    </div>link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Manage Users - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 
 <body>
+    <!-- Fixed Header -->
     <header class="site-header">
-        <div class="container">
-            <div class="site-header-content">
-                <h1 class="site-title"><a href="/discussions">Forum</a></h1>
-                <nav class="site-nav">
-                    <ul>
-                        <li><a href="/discussions">Discussions</a></li>
-                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
-                        {{if .User}}
-                        <li class="user-menu">
-                            <span>{{.User.Username}}</span>
-                            <div class="dropdown-menu">
-                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
-                                <a href="/logout">Logout</a>
-                            </div>
-                        </li>
-                        {{end}}
-                    </ul>
-                </nav>
-            </div>
+        <div class="site-header-content">
+            <h1 class="site-title">
+                <a href="/discussions">💬 Forum</a>
+            </h1>
+            
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="/discussions">Discussions</a></li>
+                    <li><a href="/admin" class="admin-link active">Admin Panel</a></li>
+                    {{if .User}}
+                    <li class="user-menu">
+                        <span>{{.User.Username}}</span>
+                        <div class="dropdown-menu">
+                            <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                            <a href="/logout">Logout</a>
+                        </div>
+                    </li>
+                    {{end}}
+                </ul>
+            </nav>
         </div>
     </header>
 
-    <main class="container">
-        <div class="admin-layout">
-            <!-- Admin Sidebar -->
-            <aside class="admin-sidebar">
-                <h3>Admin Menu</h3>
-                <nav class="admin-nav">
-                    <ul>
-                        <li><a href="/admin">📊 Dashboard</a></li>
-                        <li><a href="/admin/discussions">💬 Manage Discussions</a></li>
-                        <li><a href="/admin/users" class="active">👥 Manage Users</a></li>
-                    </ul>
-                </nav>
-            </aside>
+    <!-- Admin Layout -->
+    <div class="admin-layout">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <h3>⚙️ Admin Panel</h3>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="/admin">
+                        <span class="sidebar-nav-icon">📊</span>
+                        <span class="sidebar-nav-text">Dashboard</span>
+                    </a></li>
+                    <li><a href="/admin/discussions">
+                        <span class="sidebar-nav-icon">💬</span>
+                        <span class="sidebar-nav-text">Discussions</span>
+                    </a></li>
+                    <li><a href="/admin/users" class="active">
+                        <span class="sidebar-nav-icon">👥</span>
+                        <span class="sidebar-nav-text">Users</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
 
-            <!-- Main Content -->
-            <div class="admin-content">
-                <div class="admin-header">
-                    <h2>Manage Users</h2>
-                    <p>Manage user accounts, roles, and moderation actions.</p>
+        <!-- Admin Content -->
+        <div class="admin-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">👥 Manage Users</h1>
+                <p class="page-subtitle">Manage user accounts, roles, and moderation actions</p>
+            </div>
+
+            <!-- User Statistics -->
+            {{if .Stats}}
+            <div class="stats-grid mb-6">
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.ActiveUsers}}</div>
+                    <div class="stat-label">✅ Active Users</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.BannedUsers}}</div>
+                    <div class="stat-label">🚫 Banned Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{.Stats.TotalUsers}}</div>
+                    <div class="stat-label">👥 Total Users</div>
+                </div>
+            </div>
+            {{end}}
 
-                <!-- Search and Filter Controls -->
-                <div class="admin-controls">
-                    <div class="search-controls">
-                        <form action="/admin/users" method="GET" class="search-form">
-                            <div class="form-group inline">
-                                <input type="search" name="search" placeholder="Search by username or email..." 
-                                       value="{{.SearchQuery}}" class="search-input">
-                                <button type="submit" class="btn btn-primary">Search</button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <div class="filter-controls">
-                        <form action="/admin/users" method="GET" class="filter-form">
-                            <div class="form-group inline">
-                                <label for="status">Status:</label>
-                                <select name="status" id="status" onchange="this.form.submit()">
+            <!-- Search and Filter Controls -->
+            <div class="card mb-6">
+                <div class="card-body">
+                    <div class="discussion-controls">
+                        <!-- Search Form -->
+                        <div class="search-container">
+                            <form action="/admin/users" method="GET" class="search-form">
+                                <div class="search-input-wrapper">
+                                    <input type="search" 
+                                           name="search" 
+                                           placeholder="Search by username or email..." 
+                                           value="{{.SearchQuery}}"
+                                           class="search-input">
+                                    <button type="submit" class="search-btn">🔍</button>
+                                </div>
+                                {{if .StatusFilter}}<input type="hidden" name="status" value="{{.StatusFilter}}">{{end}}
+                            </form>
+                        </div>
+                        
+                        <!-- Filter Controls -->
+                        <div class="filter-controls">
+                            <form action="/admin/users" method="GET">
+                                <select name="status" onchange="this.form.submit()" class="filter-select">
                                     <option value="">All Users</option>
                                     <option value="active" {{if eq .StatusFilter "active"}}selected{{end}}>Active</option>
                                     <option value="banned" {{if eq .StatusFilter "banned"}}selected{{end}}>Banned</option>
                                 </select>
-                            </div>
-                            {{if .SearchQuery}}<input type="hidden" name="search" value="{{.SearchQuery}}">{{end}}
-                        </form>
+                                {{if .SearchQuery}}<input type="hidden" name="search" value="{{.SearchQuery}}">{{end}}
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Summary -->
+                    <div class="mt-4">
+                        <p class="text-sm text-muted">
+                            Showing {{if .Users}}{{len .Users}}{{else}}0{{end}} of {{.TotalCount}} users
+                            {{if .SearchQuery}}matching "{{.SearchQuery}}"{{end}}
+                            {{if .StatusFilter}}with status "{{.StatusFilter}}"{{end}}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Results Summary -->
-                <div class="results-summary">
-                    <p>Showing {{if .Users}}{{len .Users}}{{else}}0{{end}} of {{.TotalCount}} users
-                        {{if .SearchQuery}}matching "{{.SearchQuery}}"{{end}}
-                        {{if .StatusFilter}}with status "{{.StatusFilter}}"{{end}}
-                    </p>
-                </div>
-
-                <!-- Users Table -->
-                <div class="admin-table-container">
-                    {{if .Users}}
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Last Login</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .Users}}
-                            <tr class="{{if .IsBanned}}banned-user{{end}}">
-                                <td>
-                                    <div class="user-info">
-                                        <strong>{{.Username}}</strong>
-                                        {{if eq .UserId $.User.UserId}}<span class="badge">You</span>{{end}}
-                                    </div>
-                                </td>
-                                <td>{{.Email}}</td>
-                                <td>
-                                    <span class="role-badge {{.Role}}">{{.Role}}</span>
-                                </td>
-                                <td>
-                                    {{if .IsBanned}}
-                                    <span class="status-badge banned">Banned</span>
-                                    {{else}}
-                                    <span class="status-badge active">Active</span>
-                                    {{end}}
-                                </td>
-                                <td>{{.CreatedAt.Format "Jan 02, 2006"}}</td>
-                                <td>
-                                    {{if .LastLogin.Valid}}
-                                    {{.LastLogin.Time.Format "Jan 02, 2006"}}
-                                    {{else}}
-                                    Never
-                                    {{end}}
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        {{if ne .UserId $.User.UserId}}
-                                        <form action="/admin/users/ban" method="POST" class="inline-form">
-                                            <input type="hidden" name="user_id" value="{{.UserId}}">
-                                            {{if .IsBanned}}
-                                            <button type="submit" name="action" value="unban" class="btn btn-sm btn-success"
-                                                onclick="return confirm('Are you sure you want to unban {{.Username}}?')">
-                                                Unban
-                                            </button>
-                                            {{else}}
-                                            <button type="submit" name="action" value="ban" class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Are you sure you want to ban {{.Username}}? They will not be able to login or participate in discussions.')">
-                                                Ban
-                                            </button>
-                                            {{end}}
-                                        </form>
-                                        
-                                        <!-- Link to view user's discussions -->
-                                        <a href="/discussions?author={{.UserId}}" class="btn btn-sm btn-outline" target="_blank">
-                                            View Posts
-                                        </a>
-                                        {{else}}
-                                        <span class="text-muted">Current user</span>
+            <!-- Users Management -->
+            {{if .Users}}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Users}}
+                        <tr>
+                            <td>
+                                <div class="flex items-center">
+                                    <div>
+                                        <div class="font-medium">{{.Username}}</div>
+                                        {{if .Biography}}
+                                        <div class="text-sm text-muted">{{.Biography}}</div>
                                         {{end}}
                                     </div>
-                                </td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                    {{else}}
-                    <div class="empty-state">
-                        {{if .SearchQuery}}
-                        <h3>No results found</h3>
-                        <p>No users match your search criteria.</p>
-                        <a href="/admin/users" class="btn">Clear search</a>
-                        {{else}}
-                        <h3>No users found</h3>
-                        <p>There are no users to manage.</p>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-sm">{{.Email}}</span>
+                            </td>
+                            <td>
+                                <span class="tag {{if eq .Role "admin"}}active{{end}}">
+                                    {{if eq .Role "admin"}}👑 Admin{{else}}👤 User{{end}}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status {{.Status}}">{{.Status}}</span>
+                            </td>
+                            <td>
+                                <span class="text-sm">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    {{if ne .Role "admin"}}
+                                        {{if eq .Status "active"}}
+                                        <!-- Ban User -->
+                                        <form action="/admin/users/ban" method="POST" style="display: inline;">
+                                            <input type="hidden" name="user_id" value="{{.UserId}}">
+                                            <button type="submit" class="btn btn-sm btn-warning" 
+                                                    onclick="return confirm('Are you sure you want to ban this user?')">
+                                                🚫 Ban
+                                            </button>
+                                        </form>
+                                        {{else if eq .Status "banned"}}
+                                        <!-- Unban User -->
+                                        <form action="/admin/users/unban" method="POST" style="display: inline;">
+                                            <input type="hidden" name="user_id" value="{{.UserId}}">
+                                            <button type="submit" class="btn btn-sm btn-success" 
+                                                    onclick="return confirm('Are you sure you want to unban this user?')">
+                                                ✅ Unban
+                                            </button>
+                                        </form>
+                                        {{end}}
+                                        
+                                        <!-- Delete User -->
+                                        <form action="/admin/users/delete" method="POST" style="display: inline;">
+                                            <input type="hidden" name="user_id" value="{{.UserId}}">
+                                            <button type="submit" class="btn btn-sm btn-danger" 
+                                                    onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.')">
+                                                🗑️ Delete
+                                            </button>
+                                        </form>
+                                    {{else}}
+                                        <span class="text-sm text-muted">Admin user</span>
+                                    {{end}}
+                                </div>
+                            </td>
+                        </tr>
                         {{end}}
-                    </div>
+                    </tbody>
+                </table>
+            </div>
+            {{else}}
+            <!-- Empty State -->
+            <div class="card">
+                <div class="card-body text-center">
+                    {{if or .SearchQuery .StatusFilter}}
+                        <h3>🔍 No users found</h3>
+                        <p class="text-muted mb-4">No users match your current filters.</p>
+                        <a href="/admin/users" class="btn btn-secondary">Clear filters</a>
+                    {{else}}
+                        <h3>👥 No users yet</h3>
+                        <p class="text-muted mb-4">No users have registered yet.</p>
+                        <a href="/discussions" class="btn btn-primary">View Forum</a>
                     {{end}}
                 </div>
+            </div>
+            {{end}}
 
-                <!-- Pagination Controls -->
-                {{if gt .TotalPages 1}}
-                <div class="pagination">
-                    <div class="pagination-controls">
-                        {{if .HasPrev}}
-                        <a href="?page={{sub .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .StatusFilter}}&status={{.StatusFilter}}{{end}}" 
-                           class="btn btn-sm">« Previous</a>
-                        {{end}}
-                        
-                        <span class="page-info">Page {{.Page}} of {{.TotalPages}}</span>
-                        
-                        {{if .HasNext}}
-                        <a href="?page={{add .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .StatusFilter}}&status={{.StatusFilter}}{{end}}" 
-                           class="btn btn-sm">Next »</a>
-                        {{end}}
-                    </div>
-                </div>
+            <!-- Pagination -->
+            {{if gt .TotalPages 1}}
+            <div class="pagination">
+                {{if .HasPrev}}
+                <a href="?page={{.PrevPage}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .StatusFilter}}&status={{.StatusFilter}}{{end}}" 
+                   class="pagination-btn">← Previous</a>
                 {{end}}
+                
+                <span class="pagination-btn active">{{.Page}} of {{.TotalPages}}</span>
+                
+                {{if .HasNext}}
+                <a href="?page={{.NextPage}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .StatusFilter}}&status={{.StatusFilter}}{{end}}" 
+                   class="pagination-btn">Next →</a>
+                {{end}}
+            </div>
+            {{end}}
 
-                <!-- User Statistics -->
-                <div class="admin-section">
-                    <h3>User Statistics</h3>
-                    <div class="user-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total Users:</span>
-                            <span class="stat-value">{{.TotalCount}}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Active Users:</span>
-                            <span class="stat-value">{{if .Stats}}{{.Stats.ActiveUsers}}{{else}}0{{end}}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Banned Users:</span>
-                            <span class="stat-value">{{if .Stats}}{{.Stats.BannedUsers}}{{else}}0{{end}}</span>
-                        </div>
+            <!-- Quick Actions -->
+            <div class="card mt-8">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Quick Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-wrap gap-4">
+                        <a href="/discussions" class="btn btn-secondary">
+                            🔍 View Forum
+                        </a>
+                        <a href="/admin" class="btn btn-secondary">
+                            📊 Back to Dashboard
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 Forum. All rights reserved.</p>
-        </div>
-    </footer>
+    </div>
 </body>
+
 
 </html>
 {{end}}

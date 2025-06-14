@@ -8,77 +8,86 @@
     <title>Discussions - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 
 <body>
+    <!-- Fixed Header -->
     <header class="site-header">
-        <div class="container">
-            <div class="site-header-content">
-                <h1 class="site-title"><a href="/discussions">Forum</a></h1>
-                
-                <!-- Search Bar - Stack Overflow style -->
-                <div class="search-container">
-                    <form action="/discussions" method="GET" class="search-form">
-                        <div class="search-input-wrapper">
-                            <input type="search" 
-                                   name="search" 
-                                   placeholder="Search discussions by title, description, or tags..." 
-                                   value="{{.SearchQuery}}"
-                                   class="search-input">
-                            <button type="submit" class="search-btn">
-                                <i class="icon-search">🔍</i>
-                            </button>
+        <div class="site-header-content">
+            <h1 class="site-title">
+                <a href="/discussions">💬 Forum</a>
+            </h1>
+            
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="/discussions" class="active">Discussions</a></li>
+                    {{if .User}}
+                    {{if eq .User.Role "admin"}}
+                    <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                    {{end}}
+                    <li class="user-menu">
+                        <span>{{.User.Username}}</span>
+                        <div class="dropdown-menu">
+                            <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                            <a href="/logout">Logout</a>
                         </div>
-                        <!-- Preserve current filters -->
-                        {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
-                        {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
-                        {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
-                        {{if .Limit}}<input type="hidden" name="limit" value="{{.Limit}}">{{end}}
-                    </form>
-                </div>
-                
-                <nav class="site-nav">
-                    <ul>
-                        <li><a href="/discussions" class="active">Discussions</a></li>
-                        {{if .User}}
-                        {{if eq .User.Role "admin"}}
-                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
-                        {{end}}
-                        <li class="user-menu">
-                            <span>{{.User.Username}}</span>
-                            <div class="dropdown-menu">
-                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
-                                <a href="/logout">Logout</a>
-                            </div>
-                        </li>
-                        {{else}}
-                        <li><a href="/login">Login</a></li>
-                        <li><a href="/signup">Sign Up</a></li>
-                        {{end}}
-                    </ul>
-                </nav>
-            </div>
+                    </li>
+                    {{else}}
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/signup">Sign Up</a></li>
+                    {{end}}
+                </ul>
+            </nav>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+                ☰
+            </button>
         </div>
     </header>
 
-    <main class="container">
-        <div class="discussions-layout">
-            <!-- Left Sidebar - Tags/Categories -->
-            <aside class="sidebar">
+    <!-- Main Layout -->
+    <div class="discussions-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <!-- Search Section -->
                 <div class="sidebar-section">
-                    <h3>Browse by Tags</h3>
+                    <h3>🔍 Search</h3>
+                    <div class="search-container">
+                        <form action="/discussions" method="GET" class="search-form">
+                            <div class="search-input-wrapper">
+                                <input type="search" 
+                                       name="search" 
+                                       placeholder="Search discussions..." 
+                                       value="{{.SearchQuery}}"
+                                       class="search-input">
+                                <button type="submit" class="search-btn">
+                                    🔍
+                                </button>
+                            </div>
+                            <!-- Preserve current filters -->
+                            {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
+                            {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
+                            {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
+                            {{if .Limit}}<input type="hidden" name="limit" value="{{.Limit}}">{{end}}
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Categories Section -->
+                <div class="sidebar-section">
+                    <h3>📚 Browse by Category</h3>
                     <div class="tags-list">
                         <a href="/discussions" class="tag-item {{if eq .CategoryId 0}}active{{end}}">
-                            <span class="tag-name">All Topics</span>
+                            <span class="tag-name">🌟 All Topics</span>
                             <span class="tag-count">{{.TotalCount}}</span>
                         </a>
                         {{range .CategoryStats}}
                         <a href="/discussions?category={{.Category.CategoryId}}" 
-                           class="tag-item {{if eq $.CategoryId .Category.CategoryId}}active{{end}}"
-                           {{if .Category.Color}}style="border-left: 3px solid {{.Category.Color}}"{{end}}>
+                           class="tag-item {{if eq $.CategoryId .Category.CategoryId}}active{{end}}">
                             <span class="tag-name">{{.Category.Name}}</span>
                             <span class="tag-count">{{.DiscussionCount}}</span>
                         </a>
@@ -86,174 +95,202 @@
                     </div>
                 </div>
 
-                <!-- Quick Filters -->
+                <!-- Filters Section -->
                 <div class="sidebar-section">
-                    <h3>Filters</h3>
-                    <div class="quick-filters">
-                        <a href="/discussions?status=open" class="filter-link {{if eq .Status "open"}}active{{end}}">
-                            🟢 Open Discussions
-                        </a>
-                        <a href="/discussions?status=closed" class="filter-link {{if eq .Status "closed"}}active{{end}}">
-                            🔴 Closed Discussions
-                        </a>
+                    <h3>🎯 Quick Filters</h3>
+                    <ul class="sidebar-nav">
+                        <li>
+                            <a href="/discussions?status=active" class="{{if eq .Status "active"}}active{{end}}">
+                                <span class="sidebar-nav-icon">🟢</span>
+                                <span class="sidebar-nav-text">Active</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/discussions?status=closed" class="{{if eq .Status "closed"}}active{{end}}">
+                                <span class="sidebar-nav-icon">🔴</span>
+                                <span class="sidebar-nav-text">Closed</span>
+                            </a>
+                        </li>
                         {{if .User}}
-                        <a href="/discussions?author={{.User.UserId}}" class="filter-link {{if eq .AuthorId .User.UserId}}active{{end}}">
-                            👤 My Discussions
-                        </a>
+                        <li>
+                            <a href="/discussions?author={{.User.UserId}}" class="{{if eq .AuthorId .User.UserId}}active{{end}}">
+                                <span class="sidebar-nav-icon">👤</span>
+                                <span class="sidebar-nav-text">My Discussions</span>
+                            </a>
+                        </li>
                         {{end}}
-                    </div>
+                    </ul>
                 </div>
-            </aside>
+            </div>
+        </aside>
 
-            <!-- Main Content Area -->
-            <div class="main-content">
-                <div class="content-header">
-                    <div class="page-title">
-                        <h2>
-                            {{if .SearchQuery}}
-                                Search Results for "{{.SearchQuery}}"
-                            {{else if .CategoryId}}
-                                {{range .CategoryStats}}{{if eq .Category.CategoryId $.CategoryId}}{{.Category.Name}}{{end}}{{end}} Discussions
-                            {{else}}
-                                All Discussions
-                            {{end}}
-                        </h2>
+        <!-- Main Content -->
+        <div class="main-content-area">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">
                         {{if .SearchQuery}}
-                        <p class="search-meta">Found {{.TotalCount}} discussions</p>
+                            Search Results
+                        {{else if .CategoryId}}
+                            {{range .CategoryStats}}{{if eq .Category.CategoryId $.CategoryId}}{{.Category.Name}}{{end}}{{end}}
+                        {{else}}
+                            Discussions
                         {{end}}
-                    </div>
-                    
-                    <div class="content-actions">
-                        {{if .User}}
-                        <a href="/discussions/new" class="btn btn-primary">Ask Question</a>
-                        {{end}}
-                    </div>
+                    </h1>
+                    {{if .SearchQuery}}
+                    <p class="page-subtitle">Found {{.TotalCount}} results for "{{.SearchQuery}}"</p>
+                    {{else}}
+                    <p class="page-subtitle">{{.TotalCount}} discussions in total</p>
+                    {{end}}
                 </div>
+                
+                {{if .User}}
+                <a href="/discussions/new" class="btn btn-primary">
+                    ➕ New Discussion
+                </a>
+                {{end}}
+            </div>
 
-                <!-- Sorting and Pagination Controls -->
-                <div class="content-controls">
-                    <div class="sort-controls">
-                        <span class="results-count">{{.TotalCount}} discussions</span>
-                    </div>
-                    
-                    <div class="pagination-controls-top">
-                        <form action="/discussions" method="GET" class="inline-form">
-                            <select name="limit" onchange="this.form.submit()">
-                                <option value="10" {{if eq .Limit 10}}selected{{end}}>10 per page</option>
-                                <option value="20" {{if eq .Limit 20}}selected{{end}}>20 per page</option>
-                                <option value="30" {{if eq .Limit 30}}selected{{end}}>30 per page</option>
-                                <option value="1000" {{if ge .Limit 1000}}selected{{end}}>All</option>
-                            </select>
-                            <!-- Preserve current filters -->
-                            {{if .SearchQuery}}<input type="hidden" name="search" value="{{.SearchQuery}}">{{end}}
-                            {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
-                            {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
-                            {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
-                            <input type="hidden" name="page" value="1">
-                        </form>
-                    </div>
+            <!-- Discussion Controls -->
+            <div class="discussion-controls">
+                <div class="filter-controls">
+                    <span class="text-sm text-muted">Showing {{if .Discussions}}{{len .Discussions}}{{else}}0{{end}} of {{.TotalCount}} discussions</span>
                 </div>
+                
+                <div class="filter-controls">
+                    <form action="/discussions" method="GET" class="filter-select">
+                        <select name="limit" onchange="this.form.submit()" class="filter-select">
+                            <option value="10" {{if eq .Limit 10}}selected{{end}}>10 per page</option>
+                            <option value="20" {{if eq .Limit 20}}selected{{end}}>20 per page</option>
+                            <option value="30" {{if eq .Limit 30}}selected{{end}}>30 per page</option>
+                        </select>
+                        <!-- Preserve current filters -->
+                        {{if .SearchQuery}}<input type="hidden" name="search" value="{{.SearchQuery}}">{{end}}
+                        {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
+                        {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
+                        {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
+                        <input type="hidden" name="page" value="1">
+                    </form>
+                </div>
+            </div>
 
-                <!-- Discussions List -->
-                <div class="discussions-list">
-                    {{if .Discussions}}
-                    {{range .Discussions}}
-                    <div class="discussion-card {{.Status}}">
-                        <div class="discussion-stats">
-                            <div class="stat-item">
-                                <span class="stat-number">{{.ViewCount}}</span>
-                                <span class="stat-label">views</span>
+            <!-- Discussions List -->
+            <div class="discussions-list">
+                {{if .Discussions}}
+                {{range .Discussions}}
+                <div class="card discussion-card">
+                    <div class="card-body">
+                        <div class="discussion-header">
+                            <div class="discussion-votes">
+                                <div class="vote-count">{{.ViewCount}}</div>
+                                <div class="text-sm text-muted">views</div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-number">{{.MessageCount}}</span>
-                                <span class="stat-label">answers</span>
-                            </div>
-                        </div>
-                        
-                        <div class="discussion-content">
-                            <div class="discussion-header">
+                            
+                            <div class="discussion-content">
                                 <h3 class="discussion-title">
                                     <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
                                 </h3>
-                                <div class="discussion-status {{.Status}}">{{.Status}}</div>
-                            </div>
-                            
-                            <div class="discussion-excerpt">
-                                <p>{{.Description}}</p>
-                            </div>
-                            
-                            <div class="discussion-meta">
-                                <div class="discussion-tags">
-                                    {{range .Categories}}
-                                    <a href="/discussions?category={{$.CategoryId}}" class="category-tag">{{.}}</a>
-                                    {{end}}
-                                </div>
                                 
-                                <div class="discussion-author-info">
-                                    <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
-                                    <span class="discussion-author">by {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}</span>
+                                <p class="discussion-description">{{.Description}}</p>
+                                
+                                <div class="discussion-meta">
+                                    <div class="tags">
+                                        {{range .Categories}}
+                                        <a href="/discussions?category={{.}}" class="tag">{{.}}</a>
+                                        {{end}}
+                                    </div>
+                                    
+                                    <div class="discussion-stats">
+                                        <span class="discussion-stat">
+                                            💬 {{.MessageCount}} replies
+                                        </span>
+                                        <span class="discussion-stat">
+                                            👁️ {{.ViewCount}} views
+                                        </span>
+                                        <span class="discussion-stat">
+                                            📅 {{.CreatedAt.Format "Jan 02, 2006"}}
+                                        </span>
+                                        <a href="/discussions?author={{.AuthorId}}" class="discussion-author">
+                                            👤 {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <div class="status {{.Status}}">{{.Status}}</div>
                         </div>
                         
                         {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
-                        <div class="discussion-actions">
-                            <form action="/discussions/delete" method="POST"
+                        <div class="action-buttons">
+                            <form action="/discussions/delete" method="POST" style="display: inline;"
                                 onsubmit="return confirm('Are you sure you want to delete this discussion?');">
                                 <input type="hidden" name="discussion_id" value="{{.DiscussionId}}">
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
                             </form>
                         </div>
                         {{end}}
                     </div>
-                    {{end}}
-                    {{else}}
-                    <div class="empty-state">
+                </div>
+                {{end}}
+                {{else}}
+                <!-- Empty State -->
+                <div class="card">
+                    <div class="card-body text-center">
                         {{if .SearchQuery}}
-                            <h3>No results found</h3>
-                            <p>No discussions match your search for "{{.SearchQuery}}".</p>
-                            <a href="/discussions" class="btn">View all discussions</a>
+                            <h3>🔍 No results found</h3>
+                            <p class="text-muted mb-4">No discussions match your search for "{{.SearchQuery}}".</p>
+                            <a href="/discussions" class="btn btn-secondary">View all discussions</a>
                         {{else}}
-                            <h3>No discussions found</h3>
-                            <p>Be the first to start a discussion!</p>
+                            <h3>💬 No discussions found</h3>
+                            <p class="text-muted mb-4">Be the first to start a discussion!</p>
                             {{if .User}}
                             <a href="/discussions/new" class="btn btn-primary">Create the first discussion</a>
                             {{else}}
-                            <p>Please <a href="/login">login</a> to create a discussion.</p>
+                            <p>Please <a href="/login" class="btn btn-primary">login</a> to create a discussion.</p>
                             {{end}}
-                        {{end}}
-                    </div>
-                    {{end}}
-                </div>
-
-                <!-- Pagination Controls -->
-                {{if gt .TotalPages 1}}
-                <div class="pagination">
-                    <div class="pagination-info">
-                        Showing {{if .Discussions}}{{len .Discussions}}{{else}}0{{end}} of {{.TotalCount}} discussions
-                    </div>
-                    <div class="pagination-controls">
-                        {{if .HasPrev}}
-                        <a href="?page={{sub .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" class="btn btn-sm">« Previous</a>
-                        {{end}}
-                        
-                        <span class="page-info">Page {{.Page}} of {{.TotalPages}}</span>
-                        
-                        {{if .HasNext}}
-                        <a href="?page={{add .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" class="btn btn-sm">Next »</a>
                         {{end}}
                     </div>
                 </div>
                 {{end}}
             </div>
-        </div>
-    </main>
 
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2025 Forum. All rights reserved.</p>
+            <!-- Pagination -->
+            {{if gt .TotalPages 1}}
+            <div class="pagination">
+                {{if .HasPrev}}
+                <a href="?page={{.PrevPage}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" 
+                   class="pagination-btn">← Previous</a>
+                {{end}}
+                
+                <span class="pagination-btn active">{{.Page}} of {{.TotalPages}}</span>
+                
+                {{if .HasNext}}
+                <a href="?page={{.NextPage}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" 
+                   class="pagination-btn">Next →</a>
+                {{end}}
+            </div>
+            {{end}}
         </div>
-    </footer>
+    </div>
+
+    <!-- JavaScript for Mobile Menu -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
 </body>
 
 </html>

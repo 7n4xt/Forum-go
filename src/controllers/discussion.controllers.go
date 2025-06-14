@@ -95,6 +95,13 @@ func GetAllDiscussions(w http.ResponseWriter, r *http.Request) {
 	hasNext := page < totalPages
 	hasPrev := page > 1
 
+	// Calculate next and previous page numbers
+	nextPage := page + 1
+	prevPage := page - 1
+	if prevPage < 1 {
+		prevPage = 1
+	}
+
 	// Get categories for the filter dropdown and sidebar
 	categories, err := services.GetAllCategoriesService()
 	if err != nil {
@@ -125,6 +132,8 @@ func GetAllDiscussions(w http.ResponseWriter, r *http.Request) {
 		"TotalPages":    totalPages,
 		"HasNext":       hasNext,
 		"HasPrev":       hasPrev,
+		"NextPage":      nextPage,
+		"PrevPage":      prevPage,
 	}
 
 	// Render template

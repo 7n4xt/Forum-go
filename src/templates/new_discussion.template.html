@@ -1,92 +1,155 @@
 {{define "new_discussion"}}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Discussion - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/public/css/styles.css">
 </head>
-
 <body>
+    <!-- Fixed Header -->
     <header class="site-header">
-        <div class="container">
-            <div class="site-header-content">
-                <h1 class="site-title">Forum</h1>
-                <nav class="site-nav">
-                    <ul>
-                        <li><a href="/discussions">Discussions</a></li>
-                        {{if .User}}
-                        {{if eq .User.Role "admin"}}
-                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
-                        {{end}}
-                        <li class="user-menu">
-                            <span>{{.User.Username}}</span>
-                            <div class="dropdown-menu">
-                                <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
-                                <a href="/logout">Logout</a>
-                            </div>
-                        </li>
-                        {{else}}
-                        <li><a href="/login">Login</a></li>
-                        <li><a href="/signup">Sign Up</a></li>
-                        {{end}}
-                    </ul>
-                </nav>
-            </div>
+        <div class="site-header-content">
+            <h1 class="site-title">
+                <a href="/discussions">💬 Forum</a>
+            </h1>
+            
+            <nav class="site-nav">
+                <ul>
+                    <li><a href="/discussions">Discussions</a></li>
+                    {{if .User}}
+                    {{if eq .User.Role "admin"}}
+                    <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                    {{end}}
+                    <li class="user-menu">
+                        <span>{{.User.Username}}</span>
+                        <div class="dropdown-menu">
+                            <a href="/discussions?author={{.User.UserId}}">My Discussions</a>
+                            <a href="/logout">Logout</a>
+                        </div>
+                    </li>
+                    {{else}}
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/signup">Sign Up</a></li>
+                    {{end}}
+                </ul>
+            </nav>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+                ☰
+            </button>
         </div>
     </header>
 
-    <main class="container">
-        <div class="breadcrumbs">
-            <a href="/discussions">Discussions</a> &gt; New Discussion
-        </div>
-
-        <h2>Create New Discussion</h2>
-
-        <div class="form-container">
-            <form action="/discussions/create" method="POST">
-                <div class="form-group">
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" name="title" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" rows="5" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Categories:</label>
-                    <div class="categories-selection">
-                        {{range .Categories}}
-                        <div class="category-checkbox">
-                            <input type="checkbox" id="category-{{.CategoryId}}" name="categories"
-                                value="{{.CategoryId}}">
-                            <label for="category-{{.CategoryId}}">{{.Name}}</label>
-                        </div>
-                        {{end}}
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Create Discussion</button>
-                    <a href="/discussions" class="btn">Cancel</a>
-                </div>
-            </form>
-        </div>
-    </main>
-
-    <footer class="site-footer">
+    <!-- Main Content -->
+    <div class="main-content">
         <div class="container">
-            <p>&copy; 2023 Forum. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">✏️ Create New Discussion</h1>
+                <p class="page-description">Start a new conversation and engage with the community</p>
+            </div>
 
+            <div class="form-card">
+                <form action="/discussions/create" method="POST" class="discussion-form">
+                    <div class="form-group">
+                        <label for="title" class="form-label">Discussion Title</label>
+                        <input type="text" id="title" name="title" class="form-input" 
+                               placeholder="Enter a descriptive title for your discussion" required>
+                        <p class="form-help">Choose a clear, engaging title that describes your topic</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" name="description" class="form-textarea" rows="8" 
+                                  placeholder="Share your thoughts, ask questions, or start a conversation..." required></textarea>
+                        <p class="form-help">Provide details about your topic to encourage meaningful discussion</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Categories</label>
+                        <p class="form-help">Select relevant categories to help others find your discussion</p>
+                        <div class="categories-grid">
+                            {{range .Categories}}
+                            <div class="category-option">
+                                <input type="checkbox" id="category-{{.CategoryId}}" name="categories" 
+                                       value="{{.CategoryId}}" class="category-checkbox">
+                                <label for="category-{{.CategoryId}}" class="category-label">
+                                    <span class="category-name">{{.Name}}</span>
+                                    <svg class="category-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20,6 9,17 4,12"></polyline>
+                                    </svg>
+                                </label>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            </svg>
+                            Create Discussion
+                        </button>
+                        <a href="/discussions" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m12 19-7-7 7-7"></path>
+                                <path d="M19 12H5"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        // Form validation and enhancement
+        const form = document.querySelector('.discussion-form');
+        const titleInput = document.getElementById('title');
+        const descriptionTextarea = document.getElementById('description');
+        
+        if (titleInput) {
+            // Character count for title
+            titleInput.addEventListener('input', function() {
+                const maxLength = 200;
+                const remaining = maxLength - this.value.length;
+                
+                // Add character count if it doesn't exist
+                let charCount = this.parentNode.querySelector('.char-count');
+                if (!charCount) {
+                    charCount = document.createElement('div');
+                    charCount.className = 'char-count';
+                    this.parentNode.appendChild(charCount);
+                }
+                
+                charCount.textContent = `${remaining} characters remaining`;
+                charCount.style.color = remaining < 20 ? '#ef4444' : '#6b7280';
+            });
+        }
+
+        if (descriptionTextarea) {
+            // Auto-resize textarea
+            descriptionTextarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        }
+    </script>
+</body>
 </html>
 {{end}}
