@@ -33,10 +33,10 @@ func SignupService(username, password, email string) (bool, error) {
 		LastLogin:       nil,   // No last login yet
 		IsBanned:        false, // Not banned by default
 		BannedAt:        nil,   // No banned date yet
-		ProfilePicture:  "",
-		Biography:       "",
-		MessageCount:    0, // Default message count
-		DiscussionCount: 0, // Default discussion count
+		ProfilePicture:  nil,   // No profile picture initially
+		Biography:       nil,   // No biography initially
+		MessageCount:    0,     // Default message count
+		DiscussionCount: 0,     // Default discussion count
 	}
 
 	_, errNewUser := repositories.CreateUser(newUser) // Assuming this function exists in the repository

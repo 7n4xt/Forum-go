@@ -15,8 +15,8 @@ type User struct {
 	LastLogin       *time.Time // Pointer for nullable last_login field
 	IsBanned        bool       // Whether user is banned
 	BannedAt        *time.Time // Pointer for nullable banned_at field
-	ProfilePicture  string     // URL or path to profile picture
-	Biography       string     // User's biography text
+	ProfilePicture  *string    // Pointer for nullable profile_picture field
+	Biography       *string    // Pointer for nullable biography field
 	MessageCount    int        // Count of messages sent by user
 	DiscussionCount int        // Count of discussions started by user
 }

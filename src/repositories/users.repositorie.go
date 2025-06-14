@@ -12,6 +12,19 @@ func CreateUser(user models.User) (int, error) {
 	// 1. Définition de la requête SQL d'insertion.
 	query := "INSERT INTO `users`(`username`, `email`, `password_hash`, `role`, `profile_picture`, `biography`) VALUES (?,?,?,?,?,?);"
 
+	// Handle nullable fields
+	var profilePicture, biography interface{}
+	if user.ProfilePicture != nil {
+		profilePicture = *user.ProfilePicture
+	} else {
+		profilePicture = nil
+	}
+	if user.Biography != nil {
+		biography = *user.Biography
+	} else {
+		biography = nil
+	}
+
 	// 2. Exécution de la requête avec les valeurs extraites de l'objet user.
 	sqlResult, err := config.DbContext.Exec(
 		query,
@@ -19,8 +32,8 @@ func CreateUser(user models.User) (int, error) {
 		user.Email,
 		user.PasswordHash,
 		user.Role,
-		user.ProfilePicture,
-		user.Biography,
+		profilePicture,
+		biography,
 	)
 
 	if err != nil {
@@ -50,6 +63,7 @@ func ReadAllUsers() (*[]models.User, error) {
 	for sqlResult.Next() {
 		var user models.User
 		var lastLogin, bannedAt sql.NullTime
+		var profilePicture, biography sql.NullString
 
 		// On scanne chaque colonne dans les champs du struct User
 		scanErr := sqlResult.Scan(
@@ -62,8 +76,8 @@ func ReadAllUsers() (*[]models.User, error) {
 			&lastLogin,
 			&user.IsBanned,
 			&bannedAt,
-			&user.ProfilePicture,
-			&user.Biography,
+			&profilePicture,
+			&biography,
 			&user.MessageCount,
 			&user.DiscussionCount,
 		)
@@ -78,6 +92,14 @@ func ReadAllUsers() (*[]models.User, error) {
 		}
 		if bannedAt.Valid {
 			user.BannedAt = &bannedAt.Time
+		}
+
+		// Conversion des champs NullString en *string
+		if profilePicture.Valid {
+			user.ProfilePicture = &profilePicture.String
+		}
+		if biography.Valid {
+			user.Biography = &biography.String
 		}
 
 		// Ajout à la liste des utilisateurs
@@ -102,6 +124,7 @@ func ReadUserById(userId int) (*models.User, error) {
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
+	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -113,8 +136,8 @@ func ReadUserById(userId int) (*models.User, error) {
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&user.ProfilePicture,
-		&user.Biography,
+		&profilePicture,
+		&biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -136,6 +159,14 @@ func ReadUserById(userId int) (*models.User, error) {
 		user.BannedAt = &bannedAt.Time
 	}
 
+	// Conversion des champs NullString en *string
+	if profilePicture.Valid {
+		user.ProfilePicture = &profilePicture.String
+	}
+	if biography.Valid {
+		user.Biography = &biography.String
+	}
+
 	// 3. Retour utilisateur trouvé
 	return &user, nil
 }
@@ -150,6 +181,7 @@ func ReadUserByUsername(username string) (*models.User, error) {
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
+	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -161,8 +193,8 @@ func ReadUserByUsername(username string) (*models.User, error) {
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&user.ProfilePicture,
-		&user.Biography,
+		&profilePicture,
+		&biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -184,6 +216,14 @@ func ReadUserByUsername(username string) (*models.User, error) {
 		user.BannedAt = &bannedAt.Time
 	}
 
+	// Conversion des champs NullString en *string
+	if profilePicture.Valid {
+		user.ProfilePicture = &profilePicture.String
+	}
+	if biography.Valid {
+		user.Biography = &biography.String
+	}
+
 	// 3. Retour utilisateur trouvé
 	return &user, nil
 }
@@ -198,6 +238,7 @@ func ReadUserByEmail(email string) (*models.User, error) {
 	// 2. Scan des colonnes dans un struct User
 	var user models.User
 	var lastLogin, bannedAt sql.NullTime
+	var profilePicture, biography sql.NullString
 
 	errScan := sqlResult.Scan(
 		&user.UserId,
@@ -209,8 +250,8 @@ func ReadUserByEmail(email string) (*models.User, error) {
 		&lastLogin,
 		&user.IsBanned,
 		&bannedAt,
-		&user.ProfilePicture,
-		&user.Biography,
+		&profilePicture,
+		&biography,
 		&user.MessageCount,
 		&user.DiscussionCount,
 	)
@@ -232,6 +273,14 @@ func ReadUserByEmail(email string) (*models.User, error) {
 		user.BannedAt = &bannedAt.Time
 	}
 
+	// Conversion des champs NullString en *string
+	if profilePicture.Valid {
+		user.ProfilePicture = &profilePicture.String
+	}
+	if biography.Valid {
+		user.Biography = &biography.String
+	}
+
 	// 3. Retour utilisateur trouvé
 	return &user, nil
 }
@@ -240,6 +289,19 @@ func UpdateUser(user models.User) (bool, error) {
 	// 1. Définition de la requête d'UPDATE sur la table `users`
 	query := "UPDATE `users` SET `username` = ?, `email` = ?, `role` = ?, `is_banned` = ?, `profile_picture` = ?, `biography` = ? WHERE `user_id` = ?;"
 
+	// Handle nullable fields
+	var profilePicture, biography interface{}
+	if user.ProfilePicture != nil {
+		profilePicture = *user.ProfilePicture
+	} else {
+		profilePicture = nil
+	}
+	if user.Biography != nil {
+		biography = *user.Biography
+	} else {
+		biography = nil
+	}
+
 	// 2. Exécution de la requête avec les champs de l'utilisateur
 	sqlResult, err := config.DbContext.Exec(
 		query,
@@ -247,8 +309,8 @@ func UpdateUser(user models.User) (bool, error) {
 		user.Email,
 		user.Role,
 		user.IsBanned,
-		user.ProfilePicture,
-		user.Biography,
+		profilePicture,
+		biography,
 		user.UserId,
 	)
 
@@ -436,14 +498,24 @@ func GetRecentUsers(limit int) ([]models.User, error) {
 	var users []models.User
 	for rows.Next() {
 		var user models.User
+		var profilePicture, biography sql.NullString
 		err := rows.Scan(
 			&user.UserId, &user.Username, &user.Email, &user.PasswordHash, &user.Role,
 			&user.CreatedAt, &user.LastLogin, &user.IsBanned, &user.BannedAt,
-			&user.ProfilePicture, &user.Biography, &user.MessageCount, &user.DiscussionCount,
+			&profilePicture, &biography, &user.MessageCount, &user.DiscussionCount,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		// Conversion des champs NullString en *string
+		if profilePicture.Valid {
+			user.ProfilePicture = &profilePicture.String
+		}
+		if biography.Valid {
+			user.Biography = &biography.String
+		}
+
 		users = append(users, user)
 	}
 
@@ -491,14 +563,24 @@ func GetUsersForAdmin(searchQuery string, statusFilter string, limit int, offset
 	var users []models.User
 	for rows.Next() {
 		var user models.User
+		var profilePicture, biography sql.NullString
 		err := rows.Scan(
 			&user.UserId, &user.Username, &user.Email, &user.PasswordHash, &user.Role,
 			&user.CreatedAt, &user.LastLogin, &user.IsBanned, &user.BannedAt,
-			&user.ProfilePicture, &user.Biography, &user.MessageCount, &user.DiscussionCount,
+			&profilePicture, &biography, &user.MessageCount, &user.DiscussionCount,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		// Conversion des champs NullString en *string
+		if profilePicture.Valid {
+			user.ProfilePicture = &profilePicture.String
+		}
+		if biography.Valid {
+			user.Biography = &biography.String
+		}
+
 		users = append(users, user)
 	}
 
