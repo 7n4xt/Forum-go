@@ -54,7 +54,7 @@ Forum Go is a modern, feature-rich discussion platform built with Go, MySQL, and
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/7n4xt/Forum-go.git
    cd Forum-go
    ```
 
