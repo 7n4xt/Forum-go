@@ -8,6 +8,24 @@ import (
 var Temp *template.Template
 
 func LoadTemplates() {
+	// Define template functions
+	funcMap := template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"sub": func(a, b int) int {
+			return a - b
+		},
+		"len": func(slice interface{}) int {
+			switch s := slice.(type) {
+			case []interface{}:
+				return len(s)
+			default:
+				return 0
+			}
+		},
+	}
+
 	templates := []string{
 		"./templates/*.html",
 		"./templates/*.template.html",
@@ -15,7 +33,7 @@ func LoadTemplates() {
 	}
 
 	var err error
-	Temp = template.New("")
+	Temp = template.New("").Funcs(funcMap)
 
 	for _, pattern := range templates {
 		Temp, err = Temp.ParseGlob(pattern)

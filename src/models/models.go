@@ -68,3 +68,9 @@ type Category struct {
 	Color       string    // Hex color code
 	CreatedAt   time.Time // Category creation timestamp
 }
+
+// CategoryStats represents category statistics
+type CategoryStats struct {
+	Category        Category // The category information
+	DiscussionCount int      // Number of discussions in this category
+}

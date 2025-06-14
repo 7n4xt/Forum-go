@@ -46,6 +46,23 @@ func GetAllDiscussionsService(status string, categoryId int, authorId int, limit
 	return repositories.GetAllDiscussions(status, categoryId, authorId, limit, offset)
 }
 
+// GetAllDiscussionsWithPaginationService retrieves discussions with pagination info
+func GetAllDiscussionsWithPaginationService(status string, categoryId int, authorId int, limit int, offset int) ([]models.Discussion, int, error) {
+	// Get total count first
+	totalCount, err := repositories.GetDiscussionCount(status, categoryId, authorId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated discussions
+	discussions, err := repositories.GetAllDiscussions(status, categoryId, authorId, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return discussions, totalCount, nil
+}
+
 // UpdateDiscussionStatusService updates the status of a discussion
 func UpdateDiscussionStatusService(discussionId int, status string, userId int, isAdmin bool) error {
 	// Get discussion to check ownership
@@ -118,4 +135,26 @@ func DeleteDiscussionService(discussionId int, userId int, isAdmin bool) error {
 // GetAllCategoriesService retrieves all categories
 func GetAllCategoriesService() ([]models.Category, error) {
 	return repositories.GetAllCategories()
+}
+
+// SearchDiscussionsService searches discussions with optional filtering and pagination
+func SearchDiscussionsService(searchQuery string, status string, categoryId int, authorId int, limit int, offset int) ([]models.Discussion, int, error) {
+	// Get total count first
+	totalCount, err := repositories.GetSearchDiscussionCount(searchQuery, status, categoryId, authorId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated discussions
+	discussions, err := repositories.SearchDiscussions(searchQuery, status, categoryId, authorId, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return discussions, totalCount, nil
+}
+
+// GetCategoryStatsService retrieves category statistics
+func GetCategoryStatsService() ([]models.CategoryStats, error) {
+	return repositories.GetCategoryStats()
 }

@@ -408,3 +408,125 @@ func ExisteUserByUsernameAndEmail(username, email string) (*models.User, error) 
 	// Return the result (either nil or user found by email)
 	return user, nil
 }
+
+// GetTotalUsersCount returns the total number of users
+func GetTotalUsersCount() (int, error) {
+	var count int
+	err := config.DbContext.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+	return count, err
+}
+
+// GetBannedUsersCount returns the number of banned users
+func GetBannedUsersCount() (int, error) {
+	var count int
+	err := config.DbContext.QueryRow("SELECT COUNT(*) FROM users WHERE is_banned = 1").Scan(&count)
+	return count, err
+}
+
+// GetRecentUsers retrieves recently registered users
+func GetRecentUsers(limit int) ([]models.User, error) {
+	query := "SELECT user_id, username, email, password_hash, role, created_at, last_login, is_banned, banned_at, profile_picture, biography, message_count, discussion_count FROM users ORDER BY created_at DESC LIMIT ?"
+
+	rows, err := config.DbContext.Query(query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(
+			&user.UserId, &user.Username, &user.Email, &user.PasswordHash, &user.Role,
+			&user.CreatedAt, &user.LastLogin, &user.IsBanned, &user.BannedAt,
+			&user.ProfilePicture, &user.Biography, &user.MessageCount, &user.DiscussionCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// GetUsersForAdmin retrieves users with search and filtering for admin panel
+func GetUsersForAdmin(searchQuery string, statusFilter string, limit int, offset int) ([]models.User, error) {
+	query := `SELECT user_id, username, email, password_hash, role, created_at, last_login, is_banned, banned_at, profile_picture, biography, message_count, discussion_count 
+			  FROM users WHERE 1=1`
+
+	var args []interface{}
+
+	// Add search condition
+	if searchQuery != "" {
+		query += " AND (username LIKE ? OR email LIKE ?)"
+		searchPattern := "%" + searchQuery + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
+	// Add status filter
+	if statusFilter == "banned" {
+		query += " AND is_banned = 1"
+	} else if statusFilter == "active" {
+		query += " AND is_banned = 0"
+	}
+
+	query += " ORDER BY created_at DESC"
+
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+		if offset > 0 {
+			query += " OFFSET ?"
+			args = append(args, offset)
+		}
+	}
+
+	rows, err := config.DbContext.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(
+			&user.UserId, &user.Username, &user.Email, &user.PasswordHash, &user.Role,
+			&user.CreatedAt, &user.LastLogin, &user.IsBanned, &user.BannedAt,
+			&user.ProfilePicture, &user.Biography, &user.MessageCount, &user.DiscussionCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// GetUsersCountForAdmin returns the count of users matching admin search criteria
+func GetUsersCountForAdmin(searchQuery string, statusFilter string) (int, error) {
+	query := "SELECT COUNT(*) FROM users WHERE 1=1"
+	var args []interface{}
+
+	// Add search condition
+	if searchQuery != "" {
+		query += " AND (username LIKE ? OR email LIKE ?)"
+		searchPattern := "%" + searchQuery + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
+	// Add status filter
+	if statusFilter == "banned" {
+		query += " AND is_banned = 1"
+	} else if statusFilter == "active" {
+		query += " AND is_banned = 0"
+	}
+
+	var count int
+	err := config.DbContext.QueryRow(query, args...).Scan(&count)
+	return count, err
+}
+
+// ...existing code...

@@ -51,6 +51,37 @@ func GetMessagesByDiscussionIdService(discussionID int) ([]models.Message, error
 	return result, nil
 }
 
+// GetMessagesByDiscussionIdWithSortAndPaginationService returns messages in a discussion with sorting and pagination
+func GetMessagesByDiscussionIdWithSortAndPaginationService(discussionID int, sortBy string, limit int, offset int) ([]models.Message, int, error) {
+	// Get total count first
+	totalCount, err := repositories.GetMessageCountByDiscussionId(discussionID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated messages
+	messages, err := repositories.ReadMessagesByDiscussionIdWithSortAndPagination(discussionID, sortBy, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// If no messages, return empty slice instead of nil
+	if messages == nil {
+		return []models.Message{}, totalCount, nil
+	}
+
+	// Get author information for each message
+	result := *messages
+	for i := range result {
+		author, err := repositories.ReadUserById(result[i].AuthorId)
+		if err == nil && author != nil {
+			result[i].Author = author
+		}
+	}
+
+	return result, totalCount, nil
+}
+
 // CreateMessageService creates a new message
 func CreateMessageService(content string, authorID int, discussionID int, hasImage bool, imagePath string) (int, error) {
 	fmt.Printf("DEBUG - CreateMessageService called with discussionID: %d\n", discussionID)

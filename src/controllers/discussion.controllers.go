@@ -16,10 +16,13 @@ func GetAllDiscussions(w http.ResponseWriter, r *http.Request) {
 	// Check if user is authenticated (optional)
 	user, _ := utils.GetUserFromRequest(r)
 
-	// Get query parameters for filtering
+	// Get query parameters for filtering, search and pagination
 	status := r.URL.Query().Get("status")
 	categoryIdStr := r.URL.Query().Get("category")
 	authorIdStr := r.URL.Query().Get("author")
+	searchQuery := r.URL.Query().Get("search")
+	limitStr := r.URL.Query().Get("limit")
+	pageStr := r.URL.Query().Get("page")
 
 	// Parse parameters
 	categoryId := 0
@@ -42,28 +45,86 @@ func GetAllDiscussions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get discussions
-	discussions, err := services.GetAllDiscussionsService(status, categoryId, authorId, 20, 0)
+	// Parse pagination parameters
+	limit := 10 // default
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err == nil && parsedLimit > 0 {
+			// Allow 10, 20, 30, or "all" (represented by a large number)
+			if parsedLimit == 10 || parsedLimit == 20 || parsedLimit == 30 || parsedLimit >= 1000 {
+				limit = parsedLimit
+			}
+		}
+	}
+
+	page := 1 // default
+	if pageStr != "" {
+		parsedPage, err := strconv.Atoi(pageStr)
+		if err == nil && parsedPage > 0 {
+			page = parsedPage
+		}
+	}
+
+	offset := (page - 1) * limit
+	if limit >= 1000 {
+		limit = 0 // no limit for "all"
+		offset = 0
+	}
+
+	// Get discussions with search and pagination
+	var discussions []models.Discussion
+	var totalCount int
+	var err error
+
+	if searchQuery != "" {
+		discussions, totalCount, err = services.SearchDiscussionsService(searchQuery, status, categoryId, authorId, limit, offset)
+	} else {
+		discussions, totalCount, err = services.GetAllDiscussionsWithPaginationService(status, categoryId, authorId, limit, offset)
+	}
 	if err != nil {
 		http.Error(w, "Error fetching discussions: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Get categories for the filter dropdown
+	// Calculate pagination info
+	totalPages := 1
+	if limit > 0 {
+		totalPages = (totalCount + limit - 1) / limit // ceiling division
+	}
+
+	hasNext := page < totalPages
+	hasPrev := page > 1
+
+	// Get categories for the filter dropdown and sidebar
 	categories, err := services.GetAllCategoriesService()
 	if err != nil {
 		fmt.Println("Error fetching categories:", err)
 		// Continue without categories
 	}
 
+	// Get category stats for sidebar
+	categoryStats, err := services.GetCategoryStatsService()
+	if err != nil {
+		fmt.Println("Error fetching category stats:", err)
+		// Continue without category stats
+	}
+
 	// Prepare data for template
 	data := map[string]any{
-		"Discussions": discussions,
-		"Categories":  categories,
-		"User":        user,
-		"Status":      status,
-		"CategoryId":  categoryId,
-		"AuthorId":    authorId,
+		"Discussions":   discussions,
+		"Categories":    categories,
+		"CategoryStats": categoryStats,
+		"User":          user,
+		"Status":        status,
+		"CategoryId":    categoryId,
+		"AuthorId":      authorId,
+		"SearchQuery":   searchQuery,
+		"Limit":         limit,
+		"Page":          page,
+		"TotalCount":    totalCount,
+		"TotalPages":    totalPages,
+		"HasNext":       hasNext,
+		"HasPrev":       hasPrev,
 	}
 
 	// Render template
@@ -102,12 +163,56 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("DEBUG - Discussion object: %+v\n", discussion)
 
-	// Get messages for this discussion
-	messages, err := services.GetMessagesByDiscussionIdService(discussionId)
+	// Get query parameters for message sorting and pagination
+	sortBy := r.URL.Query().Get("sort")
+	if sortBy == "" {
+		sortBy = "newest" // default to newest first
+	}
+
+	limitStr := r.URL.Query().Get("limit")
+	pageStr := r.URL.Query().Get("page")
+
+	// Parse pagination parameters
+	limit := 10 // default
+	if limitStr != "" {
+		parsedLimit, err := strconv.Atoi(limitStr)
+		if err == nil && parsedLimit > 0 {
+			// Allow 10, 20, 30, or "all" (represented by a large number)
+			if parsedLimit == 10 || parsedLimit == 20 || parsedLimit == 30 || parsedLimit >= 1000 {
+				limit = parsedLimit
+			}
+		}
+	}
+
+	page := 1 // default
+	if pageStr != "" {
+		parsedPage, err := strconv.Atoi(pageStr)
+		if err == nil && parsedPage > 0 {
+			page = parsedPage
+		}
+	}
+
+	offset := (page - 1) * limit
+	if limit >= 1000 {
+		limit = 0 // no limit for "all"
+		offset = 0
+	}
+
+	// Get messages for this discussion with pagination and sorting
+	messages, totalMessageCount, err := services.GetMessagesByDiscussionIdWithSortAndPaginationService(discussionId, sortBy, limit, offset)
 	if err != nil {
 		http.Error(w, "Error fetching messages: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Calculate pagination info for messages
+	totalPages := 1
+	if limit > 0 {
+		totalPages = (totalMessageCount + limit - 1) / limit // ceiling division
+	}
+
+	hasNext := page < totalPages
+	hasPrev := page > 1
 
 	// Add user reactions if user is logged in
 	var messagesWithReactions []models.MessageWithReaction
@@ -124,10 +229,17 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare data for template
 	data := map[string]interface{}{
-		"Discussion": discussion,
-		"Messages":   messagesWithReactions,
-		"User":       user,
-		"CanPost":    user != nil && discussion.Status == "open",
+		"Discussion":        discussion,
+		"Messages":          messagesWithReactions,
+		"User":              user,
+		"CanPost":           user != nil && discussion.Status == "open",
+		"SortBy":            sortBy,
+		"Limit":             limit,
+		"Page":              page,
+		"TotalMessageCount": totalMessageCount,
+		"TotalPages":        totalPages,
+		"HasNext":           hasNext,
+		"HasPrev":           hasPrev,
 	}
 
 	fmt.Printf("DEBUG - Discussion ID in template data: %d\n", discussion.DiscussionId)

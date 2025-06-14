@@ -21,6 +21,9 @@
                     <ul>
                         <li><a href="/discussions">Discussions</a></li>
                         {{if .User}}
+                        {{if eq .User.Role "admin"}}
+                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                        {{end}}
                         <li class="user-menu">
                             <span>{{.User.Username}}</span>
                             <div class="dropdown-menu">

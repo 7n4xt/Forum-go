@@ -17,11 +17,36 @@
     <header class="site-header">
         <div class="container">
             <div class="site-header-content">
-                <h1 class="site-title">Forum</h1>
+                <h1 class="site-title"><a href="/discussions">Forum</a></h1>
+                
+                <!-- Search Bar - Stack Overflow style -->
+                <div class="search-container">
+                    <form action="/discussions" method="GET" class="search-form">
+                        <div class="search-input-wrapper">
+                            <input type="search" 
+                                   name="search" 
+                                   placeholder="Search discussions by title, description, or tags..." 
+                                   value="{{.SearchQuery}}"
+                                   class="search-input">
+                            <button type="submit" class="search-btn">
+                                <i class="icon-search">🔍</i>
+                            </button>
+                        </div>
+                        <!-- Preserve current filters -->
+                        {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
+                        {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
+                        {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
+                        {{if .Limit}}<input type="hidden" name="limit" value="{{.Limit}}">{{end}}
+                    </form>
+                </div>
+                
                 <nav class="site-nav">
                     <ul>
                         <li><a href="/discussions" class="active">Discussions</a></li>
                         {{if .User}}
+                        {{if eq .User.Role "admin"}}
+                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                        {{end}}
                         <li class="user-menu">
                             <span>{{.User.Username}}</span>
                             <div class="dropdown-menu">
@@ -40,87 +65,187 @@
     </header>
 
     <main class="container">
-        <div class="page-header">
-            <h2>Discussions</h2>
-            {{if .User}}
-            <a href="/discussions/new" class="btn btn-primary">New Discussion</a>
-            {{end}}
-        </div>
-
-        <div class="filters">
-            <form action="/discussions" method="GET">
-                <div class="filter-group">
-                    <label for="status">Status:</label>
-                    <select name="status" id="status">
-                        <option value="" {{if eq .Status "" }}selected{{end}}>All</option>
-                        <option value="open" {{if eq .Status "open" }}selected{{end}}>Open</option>
-                        <option value="closed" {{if eq .Status "closed" }}selected{{end}}>Closed</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="category">Category:</label>
-                    <select name="category" id="category">
-                        <option value="0" {{if eq .CategoryId 0}}selected{{end}}>All</option>
-                        {{range .Categories}}
-                        <option value="{{.CategoryId}}" {{if eq $.CategoryId .CategoryId}}selected{{end}}>{{.Name}}
-                        </option>
-                        {{end}}
-                    </select>
-                </div>
-
-                <button type="submit" class="btn">Filter</button>
-            </form>
-        </div>
-
-        <div class="discussions-list">
-            {{if .Discussions}}
-            {{range .Discussions}}
-            <div class="discussion-card {{.Status}}">
-                <div class="discussion-votes">
-                    <span class="view-count">{{.ViewCount}}</span>
-                    <span class="view-label">views</span>
-                </div>
-                <div class="discussion-content">
-                    <div class="discussion-header">
-                        <h3 class="discussion-title">
-                            <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
-                        </h3>
-                        <div class="discussion-status {{.Status}}">{{.Status}}</div>
-                    </div>
-                    <div class="discussion-meta">
-                        <span class="discussion-author">Posted by {{if
-                            .Author}}u/{{.Author.Username}}{{else}}Unknown{{end}}</span>
-                        <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
-                        <span class="discussion-messages"><i class="icon-message"></i> {{.MessageCount}} comments</span>
-                    </div>
-                    <div class="discussion-categories">
-                        {{range .Categories}}
-                        <span class="category-tag">{{.}}</span>
+        <div class="discussions-layout">
+            <!-- Left Sidebar - Tags/Categories -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Browse by Tags</h3>
+                    <div class="tags-list">
+                        <a href="/discussions" class="tag-item {{if eq .CategoryId 0}}active{{end}}">
+                            <span class="tag-name">All Topics</span>
+                            <span class="tag-count">{{.TotalCount}}</span>
+                        </a>
+                        {{range .CategoryStats}}
+                        <a href="/discussions?category={{.Category.CategoryId}}" 
+                           class="tag-item {{if eq $.CategoryId .Category.CategoryId}}active{{end}}"
+                           {{if .Category.Color}}style="border-left: 3px solid {{.Category.Color}}"{{end}}>
+                            <span class="tag-name">{{.Category.Name}}</span>
+                            <span class="tag-count">{{.DiscussionCount}}</span>
+                        </a>
                         {{end}}
                     </div>
                 </div>
-                {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
-                <div class="discussion-actions">
-                    <form action="/discussions/delete" method="POST"
-                        onsubmit="return confirm('Are you sure you want to delete this discussion?');">
-                        <input type="hidden" name="discussion_id" value="{{.DiscussionId}}">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
+
+                <!-- Quick Filters -->
+                <div class="sidebar-section">
+                    <h3>Filters</h3>
+                    <div class="quick-filters">
+                        <a href="/discussions?status=open" class="filter-link {{if eq .Status "open"}}active{{end}}">
+                            🟢 Open Discussions
+                        </a>
+                        <a href="/discussions?status=closed" class="filter-link {{if eq .Status "closed"}}active{{end}}">
+                            🔴 Closed Discussions
+                        </a>
+                        {{if .User}}
+                        <a href="/discussions?author={{.User.UserId}}" class="filter-link {{if eq .AuthorId .User.UserId}}active{{end}}">
+                            👤 My Discussions
+                        </a>
+                        {{end}}
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <div class="content-header">
+                    <div class="page-title">
+                        <h2>
+                            {{if .SearchQuery}}
+                                Search Results for "{{.SearchQuery}}"
+                            {{else if .CategoryId}}
+                                {{range .CategoryStats}}{{if eq .Category.CategoryId $.CategoryId}}{{.Category.Name}}{{end}}{{end}} Discussions
+                            {{else}}
+                                All Discussions
+                            {{end}}
+                        </h2>
+                        {{if .SearchQuery}}
+                        <p class="search-meta">Found {{.TotalCount}} discussions</p>
+                        {{end}}
+                    </div>
+                    
+                    <div class="content-actions">
+                        {{if .User}}
+                        <a href="/discussions/new" class="btn btn-primary">Ask Question</a>
+                        {{end}}
+                    </div>
+                </div>
+
+                <!-- Sorting and Pagination Controls -->
+                <div class="content-controls">
+                    <div class="sort-controls">
+                        <span class="results-count">{{.TotalCount}} discussions</span>
+                    </div>
+                    
+                    <div class="pagination-controls-top">
+                        <form action="/discussions" method="GET" class="inline-form">
+                            <select name="limit" onchange="this.form.submit()">
+                                <option value="10" {{if eq .Limit 10}}selected{{end}}>10 per page</option>
+                                <option value="20" {{if eq .Limit 20}}selected{{end}}>20 per page</option>
+                                <option value="30" {{if eq .Limit 30}}selected{{end}}>30 per page</option>
+                                <option value="1000" {{if ge .Limit 1000}}selected{{end}}>All</option>
+                            </select>
+                            <!-- Preserve current filters -->
+                            {{if .SearchQuery}}<input type="hidden" name="search" value="{{.SearchQuery}}">{{end}}
+                            {{if .Status}}<input type="hidden" name="status" value="{{.Status}}">{{end}}
+                            {{if .CategoryId}}<input type="hidden" name="category" value="{{.CategoryId}}">{{end}}
+                            {{if .AuthorId}}<input type="hidden" name="author" value="{{.AuthorId}}">{{end}}
+                            <input type="hidden" name="page" value="1">
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Discussions List -->
+                <div class="discussions-list">
+                    {{if .Discussions}}
+                    {{range .Discussions}}
+                    <div class="discussion-card {{.Status}}">
+                        <div class="discussion-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{.ViewCount}}</span>
+                                <span class="stat-label">views</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{.MessageCount}}</span>
+                                <span class="stat-label">answers</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-content">
+                            <div class="discussion-header">
+                                <h3 class="discussion-title">
+                                    <a href="/discussions/{{.DiscussionId}}">{{.Title}}</a>
+                                </h3>
+                                <div class="discussion-status {{.Status}}">{{.Status}}</div>
+                            </div>
+                            
+                            <div class="discussion-excerpt">
+                                <p>{{.Description}}</p>
+                            </div>
+                            
+                            <div class="discussion-meta">
+                                <div class="discussion-tags">
+                                    {{range .Categories}}
+                                    <a href="/discussions?category={{$.CategoryId}}" class="category-tag">{{.}}</a>
+                                    {{end}}
+                                </div>
+                                
+                                <div class="discussion-author-info">
+                                    <span class="discussion-date">{{.CreatedAt.Format "Jan 02, 2006"}}</span>
+                                    <span class="discussion-author">by {{if .Author}}{{.Author.Username}}{{else}}Unknown{{end}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{if and $.User (or (eq $.User.UserId .AuthorId) (eq $.User.Role "admin"))}}
+                        <div class="discussion-actions">
+                            <form action="/discussions/delete" method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this discussion?');">
+                                <input type="hidden" name="discussion_id" value="{{.DiscussionId}}">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{end}}
+                    {{else}}
+                    <div class="empty-state">
+                        {{if .SearchQuery}}
+                            <h3>No results found</h3>
+                            <p>No discussions match your search for "{{.SearchQuery}}".</p>
+                            <a href="/discussions" class="btn">View all discussions</a>
+                        {{else}}
+                            <h3>No discussions found</h3>
+                            <p>Be the first to start a discussion!</p>
+                            {{if .User}}
+                            <a href="/discussions/new" class="btn btn-primary">Create the first discussion</a>
+                            {{else}}
+                            <p>Please <a href="/login">login</a> to create a discussion.</p>
+                            {{end}}
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+
+                <!-- Pagination Controls -->
+                {{if gt .TotalPages 1}}
+                <div class="pagination">
+                    <div class="pagination-info">
+                        Showing {{if .Discussions}}{{len .Discussions}}{{else}}0{{end}} of {{.TotalCount}} discussions
+                    </div>
+                    <div class="pagination-controls">
+                        {{if .HasPrev}}
+                        <a href="?page={{sub .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" class="btn btn-sm">« Previous</a>
+                        {{end}}
+                        
+                        <span class="page-info">Page {{.Page}} of {{.TotalPages}}</span>
+                        
+                        {{if .HasNext}}
+                        <a href="?page={{add .Page 1}}{{if .SearchQuery}}&search={{.SearchQuery}}{{end}}{{if .Status}}&status={{.Status}}{{end}}{{if .CategoryId}}&category={{.CategoryId}}{{end}}{{if .AuthorId}}&author={{.AuthorId}}{{end}}&limit={{.Limit}}" class="btn btn-sm">Next »</a>
+                        {{end}}
+                    </div>
                 </div>
                 {{end}}
             </div>
-            {{end}}
-            {{else}}
-            <div class="empty-state">
-                <p>No discussions found.</p>
-                {{if .User}}
-                <a href="/discussions/new" class="btn btn-primary">Create the first discussion</a>
-                {{else}}
-                <p>Please <a href="/login">login</a> to create a discussion.</p>
-                {{end}}
-            </div>
-            {{end}}
         </div>
     </main>
 

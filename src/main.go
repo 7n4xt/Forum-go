@@ -24,6 +24,7 @@ func main() {
 	routes.AuthRouter(mux)
 	routes.DiscussionRouter(mux)
 	routes.MessageRouter(mux)
+	routes.AdminRouter(mux)
 
 	// Index page (home)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

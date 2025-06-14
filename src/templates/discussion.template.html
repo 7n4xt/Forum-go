@@ -22,6 +22,9 @@
                     <ul>
                         <li><a href="/discussions">Discussions</a></li>
                         {{if .User}}
+                        {{if eq .User.Role "admin"}}
+                        <li><a href="/admin" class="admin-link">Admin Panel</a></li>
+                        {{end}}
                         <li class="user-menu">
                             <span>{{.User.Username}}</span>
                             <div class="dropdown-menu">
@@ -112,7 +115,36 @@
         {{end}}
 
         <div class="messages-section">
-            <h3>Messages</h3>
+            <div class="messages-header">
+                <h3>Messages</h3>
+                
+                <!-- Message sorting and pagination controls -->
+                <div class="message-controls">
+                    <form action="/discussions/{{.Discussion.DiscussionId}}" method="GET" class="message-sort-form">
+                        <div class="control-group">
+                            <label for="sort">Sort by:</label>
+                            <select name="sort" id="sort" onchange="this.form.submit()">
+                                <option value="newest" {{if eq .SortBy "newest"}}selected{{end}}>Newest first</option>
+                                <option value="chronological" {{if eq .SortBy "chronological"}}selected{{end}}>Chronological</option>
+                                <option value="popularity" {{if eq .SortBy "popularity"}}selected{{end}}>Most popular</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="limit">Per page:</label>
+                            <select name="limit" id="limit" onchange="this.form.submit()">
+                                <option value="10" {{if eq .Limit 10}}selected{{end}}>10</option>
+                                <option value="20" {{if eq .Limit 20}}selected{{end}}>20</option>
+                                <option value="30" {{if eq .Limit 30}}selected{{end}}>30</option>
+                                <option value="1000" {{if ge .Limit 1000}}selected{{end}}>All</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Hidden field to preserve current page -->
+                        <input type="hidden" name="page" value="{{.Page}}">
+                    </form>
+                </div>
+            </div>
 
             {{if .Messages}}
             <div class="messages-list">
@@ -179,6 +211,26 @@
             {{else}}
             <div class="empty-state">
                 <p>No messages in this discussion yet.</p>
+            </div>
+            {{end}}
+
+            <!-- Message Pagination Controls -->
+            {{if gt .TotalPages 1}}
+            <div class="pagination">
+                <div class="pagination-info">
+                    Showing {{if .Messages}}{{len .Messages}}{{else}}0{{end}} of {{.TotalMessageCount}} messages
+                </div>
+                <div class="pagination-controls">
+                    {{if .HasPrev}}
+                    <a href="?page={{sub .Page 1}}&sort={{.SortBy}}&limit={{.Limit}}" class="btn btn-sm">« Previous</a>
+                    {{end}}
+                    
+                    <span class="page-info">Page {{.Page}} of {{.TotalPages}}</span>
+                    
+                    {{if .HasNext}}
+                    <a href="?page={{add .Page 1}}&sort={{.SortBy}}&limit={{.Limit}}" class="btn btn-sm">Next »</a>
+                    {{end}}
+                </div>
             </div>
             {{end}}
 

@@ -245,6 +245,60 @@ func GetAllDiscussions(status string, categoryId int, authorId int, limit int, o
 	return discussions, nil
 }
 
+// GetDiscussionCount returns the total count of discussions with optional filtering
+func GetDiscussionCount(status string, categoryId int, authorId int) (int, error) {
+	db := config.DbContext
+	var count int
+
+	// Build query with filters
+	query := `SELECT COUNT(DISTINCT d.discussion_id) FROM discussions d`
+
+	// Add joins if filtering by category
+	if categoryId > 0 {
+		query += ` JOIN discussion_categories dc ON d.discussion_id = dc.discussion_id`
+	}
+
+	// Add WHERE clauses
+	whereConditions := []string{}
+	args := []interface{}{}
+
+	// Filter by status
+	if status != "" {
+		whereConditions = append(whereConditions, "d.status = ?")
+		args = append(args, status)
+	} else {
+		// By default, don't show archived discussions
+		whereConditions = append(whereConditions, "d.status != 'archived'")
+	}
+
+	// Filter by visibility (always show public discussions)
+	whereConditions = append(whereConditions, "d.visibility = 'public'")
+
+	// Filter by category
+	if categoryId > 0 {
+		whereConditions = append(whereConditions, "dc.category_id = ?")
+		args = append(args, categoryId)
+	}
+
+	// Filter by author
+	if authorId > 0 {
+		whereConditions = append(whereConditions, "d.author_id = ?")
+		args = append(args, authorId)
+	}
+
+	// Add WHERE clause if conditions exist
+	if len(whereConditions) > 0 {
+		query += " WHERE " + strings.Join(whereConditions, " AND ")
+	}
+
+	err := db.QueryRow(query, args...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // UpdateDiscussionStatus updates the status of a discussion
 func UpdateDiscussionStatus(discussionId int, status string, userId int) error {
 	db := config.DbContext
@@ -389,4 +443,227 @@ func DeleteDiscussion(discussionId int) error {
 
 	// Commit the transaction
 	return tx.Commit()
+}
+
+// SearchDiscussions searches discussions by title or tags/categories
+func SearchDiscussions(searchQuery string, status string, categoryId int, authorId int, limit int, offset int) ([]models.Discussion, error) {
+	db := config.DbContext
+	var discussions []models.Discussion
+
+	// Build query with search functionality
+	query := `
+		SELECT DISTINCT d.discussion_id, d.title, d.description, d.status, d.visibility, 
+		       d.author_id, d.created_at, d.updated_at, d.view_count, d.message_count
+		FROM discussions d
+		LEFT JOIN discussion_categories dc ON d.discussion_id = dc.discussion_id
+		LEFT JOIN categories c ON dc.category_id = c.category_id
+	`
+
+	// Add WHERE clauses
+	whereConditions := []string{}
+	args := []interface{}{}
+
+	// Search functionality
+	if searchQuery != "" {
+		whereConditions = append(whereConditions, "(d.title LIKE ? OR d.description LIKE ? OR c.name LIKE ?)")
+		searchPattern := "%" + searchQuery + "%"
+		args = append(args, searchPattern, searchPattern, searchPattern)
+	}
+
+	// Filter by status
+	if status != "" {
+		whereConditions = append(whereConditions, "d.status = ?")
+		args = append(args, status)
+	} else {
+		// By default, don't show archived discussions
+		whereConditions = append(whereConditions, "d.status != 'archived'")
+	}
+
+	// Filter by visibility (always show public discussions)
+	whereConditions = append(whereConditions, "d.visibility = 'public'")
+
+	// Filter by specific category
+	if categoryId > 0 {
+		whereConditions = append(whereConditions, "dc.category_id = ?")
+		args = append(args, categoryId)
+	}
+
+	// Filter by author
+	if authorId > 0 {
+		whereConditions = append(whereConditions, "d.author_id = ?")
+		args = append(args, authorId)
+	}
+
+	// Add WHERE clause if conditions exist
+	if len(whereConditions) > 0 {
+		query += "WHERE " + strings.Join(whereConditions, " AND ")
+	}
+
+	// Add ordering and limits
+	query += " ORDER BY d.updated_at DESC"
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+		if offset > 0 {
+			query += " OFFSET ?"
+			args = append(args, offset)
+		}
+	}
+
+	// Execute query
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Process results
+	for rows.Next() {
+		var discussion models.Discussion
+		err := rows.Scan(
+			&discussion.DiscussionId, &discussion.Title, &discussion.Description, &discussion.Status, &discussion.Visibility,
+			&discussion.AuthorId, &discussion.CreatedAt, &discussion.UpdatedAt, &discussion.ViewCount, &discussion.MessageCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Get author information
+		author, err := ReadUserById(discussion.AuthorId)
+		if err == nil && author != nil {
+			discussion.Author = author
+		}
+
+		// Get categories for the discussion
+		categoryRows, err := db.Query(`
+			SELECT c.category_id, c.name
+			FROM categories c
+			JOIN discussion_categories dc ON c.category_id = dc.category_id
+			WHERE dc.discussion_id = ?
+		`, discussion.DiscussionId)
+		if err != nil {
+			return nil, err
+		}
+
+		var categories []string
+		var categoryIds []int
+		for categoryRows.Next() {
+			var categoryId int
+			var categoryName string
+			if err := categoryRows.Scan(&categoryId, &categoryName); err != nil {
+				categoryRows.Close()
+				return nil, err
+			}
+			categories = append(categories, categoryName)
+			categoryIds = append(categoryIds, categoryId)
+		}
+		categoryRows.Close()
+
+		discussion.Categories = categories
+		discussion.CategoryIds = categoryIds
+
+		discussions = append(discussions, discussion)
+	}
+
+	return discussions, nil
+}
+
+// GetSearchDiscussionCount returns the total count of discussions matching search criteria
+func GetSearchDiscussionCount(searchQuery string, status string, categoryId int, authorId int) (int, error) {
+	db := config.DbContext
+	var count int
+
+	// Build query with search functionality
+	query := `
+		SELECT COUNT(DISTINCT d.discussion_id) 
+		FROM discussions d
+		LEFT JOIN discussion_categories dc ON d.discussion_id = dc.discussion_id
+		LEFT JOIN categories c ON dc.category_id = c.category_id
+	`
+
+	// Add WHERE clauses
+	whereConditions := []string{}
+	args := []interface{}{}
+
+	// Search functionality
+	if searchQuery != "" {
+		whereConditions = append(whereConditions, "(d.title LIKE ? OR d.description LIKE ? OR c.name LIKE ?)")
+		searchPattern := "%" + searchQuery + "%"
+		args = append(args, searchPattern, searchPattern, searchPattern)
+	}
+
+	// Filter by status
+	if status != "" {
+		whereConditions = append(whereConditions, "d.status = ?")
+		args = append(args, status)
+	} else {
+		// By default, don't show archived discussions
+		whereConditions = append(whereConditions, "d.status != 'archived'")
+	}
+
+	// Filter by visibility (always show public discussions)
+	whereConditions = append(whereConditions, "d.visibility = 'public'")
+
+	// Filter by specific category
+	if categoryId > 0 {
+		whereConditions = append(whereConditions, "dc.category_id = ?")
+		args = append(args, categoryId)
+	}
+
+	// Filter by author
+	if authorId > 0 {
+		whereConditions = append(whereConditions, "d.author_id = ?")
+		args = append(args, authorId)
+	}
+
+	// Add WHERE clause if conditions exist
+	if len(whereConditions) > 0 {
+		query += "WHERE " + strings.Join(whereConditions, " AND ")
+	}
+
+	err := db.QueryRow(query, args...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// GetCategoryStats returns category statistics (discussion count per category)
+func GetCategoryStats() ([]models.CategoryStats, error) {
+	db := config.DbContext
+	var stats []models.CategoryStats
+
+	query := `
+		SELECT c.category_id, c.name, c.color, COUNT(dc.discussion_id) as discussion_count
+		FROM categories c
+		LEFT JOIN discussion_categories dc ON c.category_id = dc.category_id
+		LEFT JOIN discussions d ON dc.discussion_id = d.discussion_id AND d.status != 'archived' AND d.visibility = 'public'
+		GROUP BY c.category_id, c.name, c.color
+		ORDER BY discussion_count DESC, c.name ASC
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var stat models.CategoryStats
+		err := rows.Scan(&stat.Category.CategoryId, &stat.Category.Name, &stat.Category.Color, &stat.DiscussionCount)
+		if err != nil {
+			return nil, err
+		}
+		stats = append(stats, stat)
+	}
+
+	return stats, nil
+}
+
+// GetDiscussionCountByStatus returns the number of discussions with a specific status
+func GetDiscussionCountByStatus(status string) (int, error) {
+	var count int
+	err := config.DbContext.QueryRow("SELECT COUNT(*) FROM discussions WHERE status = ?", status).Scan(&count)
+	return count, err
 }

@@ -108,7 +108,7 @@ func ReadMessageById(messageId int) (*models.Message, error) {
 // ReadMessagesByDiscussionId retrieves all messages from a discussion
 func ReadMessagesByDiscussionId(discussionId int) (*[]models.Message, error) {
 	sqlResult, err := config.DbContext.Query(
-		"SELECT * FROM `messages` WHERE discussion_id = ? ORDER BY created_at;",
+		"SELECT * FROM `messages` WHERE discussion_id = ? ORDER BY created_at DESC;",
 		discussionId,
 	)
 	if err != nil {
@@ -146,6 +146,86 @@ func ReadMessagesByDiscussionId(discussionId int) (*[]models.Message, error) {
 	}
 
 	return &listMessages, nil
+}
+
+// ReadMessagesByDiscussionIdWithSortAndPagination retrieves messages from a discussion with sorting and pagination
+func ReadMessagesByDiscussionIdWithSortAndPagination(discussionId int, sortBy string, limit int, offset int) (*[]models.Message, error) {
+	var query string
+
+	// Build query based on sort type
+	switch sortBy {
+	case "popularity":
+		query = "SELECT * FROM `messages` WHERE discussion_id = ? ORDER BY popularity_score DESC, created_at DESC"
+	case "chronological":
+		query = "SELECT * FROM `messages` WHERE discussion_id = ? ORDER BY created_at ASC"
+	default: // default to newest first
+		query = "SELECT * FROM `messages` WHERE discussion_id = ? ORDER BY created_at DESC"
+	}
+
+	// Add pagination
+	if limit > 0 {
+		query += " LIMIT ?"
+		if offset > 0 {
+			query += " OFFSET ?"
+		}
+	}
+
+	// Prepare arguments
+	var args []interface{}
+	args = append(args, discussionId)
+	if limit > 0 {
+		args = append(args, limit)
+		if offset > 0 {
+			args = append(args, offset)
+		}
+	}
+
+	sqlResult, err := config.DbContext.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("Erreur récupération messages par discussion avec tri et pagination - Erreur : \n\t %s", err.Error())
+	}
+	defer sqlResult.Close()
+
+	var listMessages []models.Message
+	for sqlResult.Next() {
+		var message models.Message
+
+		err := sqlResult.Scan(
+			&message.MessageId,
+			&message.Content,
+			&message.AuthorId,
+			&message.DiscussionId,
+			&message.CreatedAt,
+			&message.UpdatedAt,
+			&message.HasImage,
+			&message.ImagePath,
+			&message.LikeCount,
+			&message.DislikeCount,
+			&message.PopularityScore,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("Erreur récupération messages par discussion avec tri et pagination - Erreur : \n\t %s", err.Error())
+		}
+
+		listMessages = append(listMessages, message)
+	}
+
+	if sqlResult.Err() != nil {
+		return nil, fmt.Errorf("Erreur récupération messages par discussion avec tri et pagination - Erreur : \n\t %s", sqlResult.Err())
+	}
+
+	return &listMessages, nil
+}
+
+// GetMessageCountByDiscussionId returns the total count of messages in a discussion
+func GetMessageCountByDiscussionId(discussionId int) (int, error) {
+	var count int
+	err := config.DbContext.QueryRow("SELECT COUNT(*) FROM `messages` WHERE discussion_id = ?", discussionId).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("Erreur récupération nombre de messages - Erreur : \n\t %s", err.Error())
+	}
+	return count, nil
 }
 
 // ReadMessagesByAuthorId retrieves all messages by a specific author
@@ -370,6 +450,56 @@ func GetPopularMessages(limit int) (*[]models.Message, error) {
 
 	if sqlResult.Err() != nil {
 		return nil, fmt.Errorf("Erreur récupération messages populaires - Erreur : \n\t %s", sqlResult.Err())
+	}
+
+	return &listMessages, nil
+}
+
+// GetTotalMessagesCount returns the total number of messages
+func GetTotalMessagesCount() (int, error) {
+	var count int
+	err := config.DbContext.QueryRow("SELECT COUNT(*) FROM messages").Scan(&count)
+	return count, err
+}
+
+// GetRecentMessages retrieves recent messages for admin review
+func GetRecentMessages(limit int) (*[]models.Message, error) {
+	sqlResult, err := config.DbContext.Query(
+		"SELECT * FROM `messages` ORDER BY created_at DESC LIMIT ?;",
+		limit,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving recent messages: %s", err.Error())
+	}
+	defer sqlResult.Close()
+
+	var listMessages []models.Message
+	for sqlResult.Next() {
+		var message models.Message
+
+		err := sqlResult.Scan(
+			&message.MessageId,
+			&message.Content,
+			&message.AuthorId,
+			&message.DiscussionId,
+			&message.CreatedAt,
+			&message.UpdatedAt,
+			&message.HasImage,
+			&message.ImagePath,
+			&message.LikeCount,
+			&message.DislikeCount,
+			&message.PopularityScore,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("error scanning recent messages: %s", err.Error())
+		}
+
+		listMessages = append(listMessages, message)
+	}
+
+	if sqlResult.Err() != nil {
+		return nil, fmt.Errorf("error iterating recent messages: %s", sqlResult.Err())
 	}
 
 	return &listMessages, nil
