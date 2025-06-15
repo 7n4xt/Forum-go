@@ -94,8 +94,14 @@ func GetRecentUsersService(limit int) ([]models.User, error) {
 	return repositories.GetRecentUsers(limit)
 }
 
+// AdminUserWithStatus extends User with a status field
+type AdminUserWithStatus struct {
+	models.User
+	Status string
+}
+
 // GetUsersForAdminService retrieves users with filtering for admin management
-func GetUsersForAdminService(searchQuery string, statusFilter string, limit int, offset int) ([]models.User, int, error) {
+func GetUsersForAdminService(searchQuery string, statusFilter string, limit int, offset int) ([]AdminUserWithStatus, int, error) {
 	// Get total count first
 	totalCount, err := repositories.GetUsersCountForAdmin(searchQuery, statusFilter)
 	if err != nil {
@@ -108,7 +114,20 @@ func GetUsersForAdminService(searchQuery string, statusFilter string, limit int,
 		return nil, 0, err
 	}
 
-	return users, totalCount, nil
+	// Convert to AdminUserWithStatus
+	result := make([]AdminUserWithStatus, len(users))
+	for i, user := range users {
+		status := "active"
+		if user.IsBanned {
+			status = "banned"
+		}
+		result[i] = AdminUserWithStatus{
+			User:   user,
+			Status: status,
+		}
+	}
+	
+	return result, totalCount, nil
 }
 
 // BanUserService bans a user account

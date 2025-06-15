@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Discussion.Title}} - Linux Lounge</title>
+    <title>{{.Discussion.Title}} - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Linux Lounge
+                    Forum
                 </a>
             </h1>
             
@@ -103,9 +103,21 @@
                         <form action="/discussions/status" method="POST" style="display: inline;">
                             <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
                             {{if eq .Discussion.Status "active"}}
-                            <button type="submit" name="status" value="closed" class="btn btn-sm btn-warning">🔒 Close</button>
+                            <button type="submit" name="status" value="closed" class="btn btn-sm btn-warning">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                Close
+                            </button>
                             {{else if eq .Discussion.Status "closed"}}
-                            <button type="submit" name="status" value="active" class="btn btn-sm btn-success">🔓 Reopen</button>
+                            <button type="submit" name="status" value="active" class="btn btn-sm btn-success">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                                </svg>
+                                Reopen
+                            </button>
                             {{end}}
                         </form>
                         
@@ -113,7 +125,13 @@
                         <form action="/discussions/delete" method="POST" style="display: inline;" 
                               onsubmit="return confirm('Are you sure you want to delete this discussion?');">
                             <input type="hidden" name="discussion_id" value="{{.Discussion.DiscussionId}}">
-                            <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                Delete
+                            </button>
                         </form>
                         {{end}}
                     </div>
@@ -125,7 +143,12 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex justify-between items-center">
-                        <h3 class="card-title">💬 Messages ({{.TotalMessageCount}})</h3>
+                        <h3 class="card-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Messages ({{.TotalMessageCount}})
+                        </h3>
                         
                         <!-- Message Controls -->
                         <div class="flex gap-4">
@@ -156,7 +179,11 @@
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center gap-3">
                                         <span class="font-semibold">
-                                            👤 {{if .Message.Author}}{{.Message.Author.Username}}{{else}}Unknown{{end}}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                            {{if .Message.Author}}{{.Message.Author.Username}}{{else}}Unknown{{end}}
                                         </span>
                                         <span class="text-sm text-muted">
                                             📅 {{.Message.CreatedAt.Format "Jan 02, 2006 at 15:04"}}
@@ -165,8 +192,18 @@
                                     
                                     {{if $.User}}
                                     <div class="flex items-center gap-2">
-                                        <span class="text-sm text-muted">👍 {{.Message.LikeCount}}</span>
-                                        <span class="text-sm text-muted">👎 {{.Message.DislikeCount}}</span>
+                                        <span class="text-sm text-muted">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                            </svg>
+                                            {{.Message.LikeCount}}
+                                        </span>
+                                        <span class="text-sm text-muted">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path>
+                                            </svg>
+                                            {{.Message.DislikeCount}}
+                                        </span>
                                     </div>
                                     {{end}}
                                 </div>
@@ -205,12 +242,18 @@
                                     <div class="flex gap-2">
                                         <form action="/messages/react/{{.Message.MessageId}}/like" method="POST" style="display: inline;">
                                             <button type="submit" class="btn btn-sm {{if eq .UserReaction "like"}}btn-primary{{else}}btn-secondary{{end}}">
-                                                👍 Like {{if gt .Message.LikeCount 0}}({{.Message.LikeCount}}){{end}}
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                                </svg>
+                                                Like {{if gt .Message.LikeCount 0}}({{.Message.LikeCount}}){{end}}
                                             </button>
                                         </form>
                                         <form action="/messages/react/{{.Message.MessageId}}/dislike" method="POST" style="display: inline;">
                                             <button type="submit" class="btn btn-sm {{if eq .UserReaction "dislike"}}btn-warning{{else}}btn-secondary{{end}}">
-                                                👎 Dislike {{if gt .Message.DislikeCount 0}}({{.Message.DislikeCount}}){{end}}
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path>
+                                                </svg>
+                                                Dislike {{if gt .Message.DislikeCount 0}}({{.Message.DislikeCount}}){{end}}
                                             </button>
                                         </form>
                                     </div>
@@ -219,11 +262,21 @@
                                     {{if and $.User (or (eq $.User.UserId .Message.AuthorId) (eq $.User.Role "admin"))}}
                                     <div class="flex gap-2">
                                         <button class="btn btn-sm btn-secondary" onclick="toggleEditForm('{{.Message.MessageId}}')">
-                                            ✏️ Edit
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                            Edit
                                         </button>
                                         <form action="/messages/delete/{{.Message.MessageId}}" method="POST" style="display: inline;"
                                               onsubmit="return confirm('Are you sure you want to delete this message?')">
-                                            <button type="submit" class="btn btn-sm btn-danger">🗑️ Delete</button>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                </svg>
+                                                Delete
+                                            </button>
                                         </form>
                                     </div>
                                     {{end}}
@@ -235,7 +288,12 @@
                     </div>
                     {{else}}
                     <div class="text-center text-muted">
-                        <p>💬 No messages in this discussion yet.</p>
+                        <p>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            No messages in this discussion yet.
+                        </p>
                         {{if .User}}
                         <p>Be the first to share your thoughts!</p>
                         {{end}}
@@ -278,7 +336,11 @@
                                       required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">
-                            🚀 Post Message
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13"></path>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Post Message
                         </button>
                     </form>
                 </div>
@@ -286,7 +348,13 @@
             {{else if eq .Discussion.Status "closed"}}
             <div class="card mt-6">
                 <div class="card-body text-center">
-                    <p class="text-muted">🔒 This discussion is closed. New messages cannot be posted.</p>
+                    <p class="text-muted">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        This discussion is closed. New messages cannot be posted.
+                    </p>
                 </div>
             </div>
             {{else if not .User}}

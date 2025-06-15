@@ -12,8 +12,6 @@ import (
 
 // ReactToMessage handles reactions (like/dislike) to messages
 func ReactToMessage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("ReactToMessage handler called")
-
 	// Only accept POST method
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

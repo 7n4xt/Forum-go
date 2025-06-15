@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Linux Lounge</title>
+    <title>Admin Dashboard - Forum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Linux Lounge
+                    Forum
                 </a>
             </h1>
             
@@ -110,32 +110,71 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">{{.Stats.TotalUsers}}</div>
-                    <div class="stat-label">👥 Total Users</div>
+                    <div class="stat-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Total Users
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">{{.Stats.TotalDiscussions}}</div>
-                    <div class="stat-label">💬 Total Discussions</div>
+                    <div class="stat-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Total Discussions
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">{{.Stats.TotalMessages}}</div>
-                    <div class="stat-label">📝 Total Messages</div>
+                    <div class="stat-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="17" y1="10" x2="3" y2="10"></line>
+                            <line x1="21" y1="6" x2="3" y2="6"></line>
+                            <line x1="21" y1="14" x2="3" y2="14"></line>
+                            <line x1="17" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                        Total Messages
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">{{.Stats.TotalCategories}}</div>
-                    <div class="stat-label">📚 Categories</div>
+                    <div class="stat-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                        Categories
+                    </div>
                 </div>
             </div>
 
             <!-- Recent Activities -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">📈 Recent Activity</h3>
+                    <h3 class="card-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                        Recent Activity
+                    </h3>
                     <p class="card-subtitle">Latest discussions and user activity</p>
                 </div>
                 <div class="card-body">
                     <!-- Recent Discussions -->
                     <div class="mb-6">
-                        <h4 class="font-semibold mb-4">🔥 Recent Discussions</h4>
+                        <h4 class="font-semibold mb-4">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Recent Discussions
+                        </h4>
                         {{if .RecentDiscussions}}
                         <div class="table-container">
                             <table class="table">
@@ -180,7 +219,13 @@
 
                     <!-- Recent Users -->
                     <div>
-                        <h4 class="font-semibold mb-4">👤 Recent Users</h4>
+                        <h4 class="font-semibold mb-4">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Recent Users
+                        </h4>
                         {{if .RecentUsers}}
                         <div class="table-container">
                             <table class="table">
@@ -200,7 +245,20 @@
                                         <td class="font-medium">{{.Username}}</td>
                                         <td>{{.Email}}</td>
                                         <td>
-                                            <span class="tag {{if eq .Role "admin"}}active{{end}}">{{.Role}}</span>
+                                            <span class="tag {{if eq .Role "admin"}}active{{end}}">
+                                                {{if eq .Role "admin"}}
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                                </svg> 
+                                                Admin
+                                                {{else}}
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                </svg>
+                                                User
+                                                {{end}}
+                                            </span>
                                         </td>
                                         <td>
                                             <span class="status {{.Status}}">{{.Status}}</span>
