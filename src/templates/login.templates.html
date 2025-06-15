@@ -17,7 +17,12 @@
     <header class="site-header">
         <div class="site-header-content">
             <h1 class="site-title">
-                <a href="/discussions">💬 Forum</a>
+                <a href="/discussions">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Forum
+                </a>
             </h1>
             
             <nav class="site-nav">
@@ -32,20 +37,20 @@
 
     <!-- Auth Container -->
     <div class="auth-container">
-        <div class="card">
-            <div class="card-header text-center">
-                <h2 class="auth-title">🔑 Welcome Back</h2>
-                <p class="text-muted">Sign in to your account to continue</p>
+        <div class="card-minimal">
+            <div class="text-center" style="margin-bottom: var(--space-8);">
+                <h2 class="display-text" style="font-size: 2.5rem; margin-bottom: var(--space-3);">WELCOME BACK</h2>
+                <p class="subtitle-text">Sign in to your account to continue</p>
             </div>
             
-            <div class="card-body">
+            <div>
                 <form action="/login/form" method="POST" class="auth-form">
                     <div class="form-group">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" 
                                id="username" 
                                name="username" 
-                               class="form-input" 
+                               class="form-input minimal-focus" 
                                placeholder="Enter your username"
                                required>
                     </div>
@@ -55,13 +60,18 @@
                         <input type="password" 
                                id="password" 
                                name="password" 
-                               class="form-input" 
+                               class="form-input minimal-focus" 
                                placeholder="Enter your password"
                                required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        🚀 Sign In
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10,17 15,12 10,7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        Sign In
                     </button>
                 </form>
                 
