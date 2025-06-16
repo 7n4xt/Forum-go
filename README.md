@@ -330,27 +330,39 @@ Forum-go/
 
 ### Task Distribution Strategy
 
-As a solo developer, the strategy focused on:
+🎯 1. Division Based on Strengths and Specialization
+	•	Member 1 focuses more on backend and security:
+	•	Responsible for registration, login (JWT), routing, security, and the admin dashboard.
+	•	Member 2 focuses more on frontend and database:
+	•	In charge of designing the database schema, HTML/CSS templates, and features like pagination and sorting.
 
-1. **Feature-Based Development**: Each feature was developed as a complete vertical slice
-2. **MVC Architecture**: Consistent separation of concerns across all features
-3. **Iterative Approach**: Build basic functionality first, then enhance with advanced features
-4. **Database-First Design**: Strong foundation with proper schema design
-5. **Security-First Mindset**: Security considerations integrated from the beginning
+👉 This division allows each person to work on tasks that align with their technical strengths, improving efficiency and quality.
 
-### Time Management and Priorities
+⸻
 
-#### **Priority Classification**:
-1. **Critical (P0)**: Authentication, basic CRUD, database security
-2. **High (P1)**: Search, pagination, admin dashboard
-3. **Medium (P2)**: Advanced UI features, analytics
-4. **Low (P3)**: UI polish, advanced admin features
+🔄 2. “Primary Owner / Secondary Support” System
 
-#### **Time Allocation**:
-- **Backend Development**: 60% (Database, services, controllers)
-- **Frontend Development**: 25% (Templates, CSS, JavaScript)
-- **Testing & Debugging**: 10%
-- **Documentation**: 5%
+Each feature (FT-1 to FT-12) has:
+	•	A Primary Owner: responsible for leading the development and making technical decisions.
+	•	A Secondary Support: assists with debugging, code review, and provides backup if needed.
+
+🎯 Benefits:
+	•	Reduces bottlenecks and ensures continuity
+	•	Promotes collaboration and shared knowledge
+	•	Encourages peer review and accountability
+
+⸻
+
+⏳ 3. Balanced Workload Distribution
+	•	The estimated hours (total: 86h) are fairly balanced overall:
+	•	Member 1 is the primary owner of FT-1, FT-2, FT-3, FT-7, FT-10, FT-11, FT-12 (approx. 56h)
+	•	Member 2 is the primary owner of FT-4, FT-5, FT-6, FT-8, FT-9 (approx. 30h)
+
+💡 Even if Member 1 has more FT hours, Member 2 compensates by owning major technical components like:
+	•	The entire database schema
+	•	All HTML/CSS frontend templates
+
+So the total workload is balanced when taking both functional and technical tasks into account.
 
 ### Documentation Strategy
 
