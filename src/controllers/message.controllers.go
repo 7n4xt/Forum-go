@@ -102,6 +102,12 @@ func CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if user is banned
+	if user.IsBanned {
+		http.Error(w, "Your account has been banned. You cannot post messages.", http.StatusForbidden)
+		return
+	}
+
 	// Parse form
 	err = r.ParseForm()
 	if err != nil {
@@ -186,7 +192,7 @@ func UpdateMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid message ID", http.StatusBadRequest)
 		return
 	}
-	messageID, err := strconv.Atoi(pathParts[2])
+	messageID, err := strconv.Atoi(pathParts[len(pathParts)-1])
 	if err != nil {
 		http.Error(w, "Invalid message ID", http.StatusBadRequest)
 		return
@@ -232,13 +238,13 @@ func DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	// Extract ID from URL path
 	pathParts := strings.Split(r.URL.Path, "/")
 	fmt.Println("URL path parts:", pathParts)
-	if len(pathParts) < 4 {
+	if len(pathParts) < 3 {
 		http.Error(w, "Invalid message ID format in URL", http.StatusBadRequest)
 		return
 	}
-	messageID, err := strconv.Atoi(pathParts[3])
+	messageID, err := strconv.Atoi(pathParts[len(pathParts)-1])
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Invalid message ID: %s - Error: %v", pathParts[3], err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Invalid message ID: %s - Error: %v", pathParts[len(pathParts)-1], err), http.StatusBadRequest)
 		return
 	}
 

@@ -754,9 +754,12 @@ body {
     white-space: nowrap;
 }
 
-.btn:disabled {
+.btn:disabled, .btn-disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background-color: var(--gray-400);
+    color: var(--gray-600);
+    border-color: var(--gray-500);
 }
 
 .btn-primary {

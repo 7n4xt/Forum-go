@@ -250,6 +250,7 @@
                                         <!-- Ban User -->
                                         <form action="/admin/users/ban" method="POST" style="display: inline;">
                                             <input type="hidden" name="user_id" value="{{.UserId}}">
+                                            <input type="hidden" name="action" value="ban">
                                             <button type="submit" class="btn btn-sm btn-warning" 
                                                     onclick="return confirm('Are you sure you want to ban this user?')">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -261,8 +262,9 @@
                                         </form>
                                         {{else if eq .Status "banned"}}
                                         <!-- Unban User -->
-                                        <form action="/admin/users/unban" method="POST" style="display: inline;">
+                                        <form action="/admin/users/ban" method="POST" style="display: inline;">
                                             <input type="hidden" name="user_id" value="{{.UserId}}">
+                                            <input type="hidden" name="action" value="unban">
                                             <button type="submit" class="btn btn-sm btn-success" 
                                                     onclick="return confirm('Are you sure you want to unban this user?')">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

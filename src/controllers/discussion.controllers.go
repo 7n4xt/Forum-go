@@ -241,7 +241,8 @@ func GetDiscussionByID(w http.ResponseWriter, r *http.Request) {
 		"Discussion":        discussion,
 		"Messages":          messagesWithReactions,
 		"User":              user,
-		"CanPost":           user != nil && discussion.Status == "open",
+		"CanPost":           user != nil && discussion.Status == "open" && !user.IsBanned,
+		"IsBanned":          user != nil && user.IsBanned,
 		"SortBy":            sortBy,
 		"Limit":             limit,
 		"Page":              page,
@@ -268,6 +269,12 @@ func CreateDiscussionForm(w http.ResponseWriter, r *http.Request) {
 	user, err := utils.GetUserFromRequest(r)
 	if err != nil || user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Check if user is banned
+	if user.IsBanned {
+		http.Error(w, "Your account has been banned. You cannot create discussions.", http.StatusForbidden)
 		return
 	}
 
@@ -311,6 +318,12 @@ func NewDiscussionPage(w http.ResponseWriter, r *http.Request) {
 	user, err := utils.GetUserFromRequest(r)
 	if err != nil || user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Check if user is banned
+	if user.IsBanned {
+		http.Error(w, "Your account has been banned. You cannot create discussions.", http.StatusForbidden)
 		return
 	}
 
